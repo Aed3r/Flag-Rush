@@ -1,0 +1,10 @@
+-Structure de base du projet (classes de base: une map, un caractère, objets tel que l'objectif, des armes et des collisions)
+
+-Elément du gameplay (mouvement, colisions, tire, points de vies et dégats) +différents moyens d'entrées
+-Mouvement dynamique de la caméra
+
+-Ennemis (complémentaire à la classe du joueur pour mouvements et tirer+trouver des chemin+attaquer automatiquement)
+-Multijoueur
+
+-Approfondissement maps, armes, objectifs, niveau de difficultés, modes de jeux +texture +sons
+-Interface
