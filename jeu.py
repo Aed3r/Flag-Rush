@@ -1,20 +1,27 @@
-import pygame as pg
+import pygame
+import Map
 
-pg.init()
-screen = pg.display.set_mode((400, 300))
+pygame.init()
+screenSize = width, height = 1000, 1000
+screen = pygame.display.set_mode(screenSize)
+
+Green = Map.Map(screen, "Green", (0, 0))
+Green.load()
+backIndex = 0
+
 done = False
-
 while not done:
-        for event in pg.event.get():
-                if event.type == pg.QUIT:
+        for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                         done = True
+                elif event.type == pygame.MOUSEBUTTONUP:
+                        backIndex += 1
+                        if backIndex == 3:
+                                Green.load()
+                                backIndex = 0
+                        else:
+                                Green.mod(backIndex)
         
-        pg.display.flip()
+        pygame.display.flip()
 
-class Map:
-    def __init__(self, background, spawn):
-        self.background = background
-        self.spawn = spawn
-    
-    def load():
         
