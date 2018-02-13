@@ -5,7 +5,7 @@ pygame.init()
 screenSize = width, height = 1000, 1000
 screen = pygame.display.set_mode(screenSize)
 
-Green = Map.Map(screen, "Green", (0, 0))
+Green = utilities.Map(screen, "Green", (0, 0))
 Green.load()
 backIndex = 0
 
