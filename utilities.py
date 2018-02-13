@@ -24,14 +24,21 @@ class Map:
                 self.spawnCoords = spawnCoords
 
 class perso:
+<<<<<<< HEAD:Map.py
         def__init__(self,fenetre,image,coords):
                         self.fenetre=fenetre
                         self.image=image
                         self.coords=coords
+=======
+        def __init__(self, fenetre, image, width, height):
+                self.fenetre = fenetre
+                self.image = image
+                self.coords = width, height
+>>>>>>> a5125ff6546b9e7f1bc604d5e9493109878bbe0d:utilities.py
                 
         def charge(self):
-                        self.image=pygame.image.load("Resources/Persos/"+ self.image+".png")
-                        self.fenetre.blit(self.image, (coords))
+                self.image=pygame.image.load("Resources/Persos/"+ self.image+".png")
+                self.fenetre.blit(self.image, (self.coords))
 
 
                 

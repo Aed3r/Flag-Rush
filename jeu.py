@@ -1,5 +1,5 @@
 import pygame
-import Map
+import utilities
 
 pygame.init()
 screenSize = width, height = 1000, 1000
