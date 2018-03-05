@@ -12,10 +12,12 @@ class Map:
                 backgroundSize = self.background.get_rect().size
                 self.baseScreen = pygame.display.set_mode(backgroundSize)
                 self.baseScreen.blit(self.background, (0, 0))
+                pygame.display.flip()
         
         def mod(self, backgroundNumber):
                 self.background = pygame.image.load("Resources/Maps/" + self.backgroundPath + str(backgroundNumber) + ".png")
                 self.baseScreen.blit(self.background, (0, 0))
+                pygame.display.flip()
 
         def getSpawn(self):
                 return self.spawnCoords
@@ -32,18 +34,24 @@ class Perso:
         def charge(self):
                 self.image=pygame.image.load("Resources/Persos/"+ self.image+".png")
                 self.fenetre.blit(self.image, (self.coords))
+                pygame.display.flip()
 
         def haut(self,coords):
                 self.coords.move(3,0)
+                pygame.display.flip()
         
         def bas(self,coords):
                 self.coords.move(-3,0)
+                pygame.display.flip()
 
         def droite(self,coords):
                 self.coords.move(0,3)
+                pygame.display.flip()
 
         def gauche(self,coords):
                 self.coords.move(0,0-3)
+                pygame.display.flip()
+                
 
 
 
