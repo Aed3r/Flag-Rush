@@ -26,30 +26,42 @@ class Map:
                 self.spawnCoords = spawnCoords
 
 class Perso:
+<<<<<<< HEAD
         def __init__(self, fenetre, image, coords):
                 self.fenetre=fenetre
                 self.image=image
                 self.coords = coords
+=======
+        def__init__(self,fenetre,image,perso_x,perso_y):
+                self.fenetre=fenetre
+                self.image=image
+                self.perso_x=perso_x
+                self.perso_y=perso_y
+>>>>>>> e4ab22de4c7bbd58b3a0fc6f3fd8162454ce9aa5
                 
         def charge(self):
                 self.image=pygame.image.load("Resources/Persos/"+ self.image+".png")
-                self.fenetre.blit(self.image, (self.coords))
+                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
 
         def haut(self,coords):
-                self.coords.move(3,0)
+                perso_x+=3
+                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
         
         def bas(self,coords):
-                self.coords.move(-3,0)
+                perso_x-=3
+                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
 
         def droite(self,coords):
-                self.coords.move(0,3)
+                perso_y+=3
+                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
 
         def gauche(self,coords):
-                self.coords.move(0,0-3)
+                perso_y-=3
+                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
 
 
