@@ -1,11 +1,12 @@
 import pygame
 
 class Map:
-        def __init__(self, baseScreen, backgroundPath, spawnCoords):
+        def __init__(self, baseScreen, backgroundPath, spawnCoords, objectifCoords):
                 self.baseScreen = baseScreen
                 self.backgroundPath = backgroundPath
                 self.spawnCoords = spawnCoords
                 self.background = None
+                self.objectifCoords = objectifCoords
 
         def load(self):
                 self.background = pygame.image.load("Resources/Maps/" + self.backgroundPath + ".png")
@@ -24,6 +25,12 @@ class Map:
 
         def setSpawn(self, spawnCoords):
                 self.spawnCoords = spawnCoords
+
+        def getObjectif(self):
+                return self.objectif = objectif
+
+        def setObjectif(self, objectifCoords):
+                self.objectifCoords = objectifCoords
 
 class Perso:
         def __init__(self,fenetre,image,perso_x,perso_y):
