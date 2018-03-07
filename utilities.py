@@ -27,7 +27,7 @@ class Map:
                 self.spawnCoords = spawnCoords
 
         def getObjectif(self):
-                return self.objectif = objectif
+                return self.objectifCoords
 
         def setObjectif(self, objectifCoords):
                 self.objectifCoords = objectifCoords
@@ -36,25 +36,34 @@ class Perso:
         def __init__(self,fenetre,image,perso_x,perso_y):
                 self.fenetre=fenetre
                 self.image=image
-                self.perso_x=perso_x
-                self.perso_y=perso_y
+                self.perso_x = perso_x
+                self.perso_y = perso_y
                 
         def charge(self):
                 self.image=pygame.image.load("Resources/Persos/"+ self.image+".png")
                 self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
 
-        def mouv(self,event):
-                if event.type == pygame.K_UP:
-                        perso_x+=3
-                if event.type == pygame.K_DOWN:
-                        perso_x-=3
-                if event.type == pygame.K_LEFT:
-                        perso_y+=3 
-                if event.type == pygame.K_RIGHT:
-                        perso_y-=3
-                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
-                pygame.display.flip()
+        def mouv(self, event, carte):
+                if event.type == pygame.K_z:
+                        self.perso_x += 3
+                        self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
+                        pygame.display.flip()
+                if event.type == pygame.K_s:
+                        self.perso_x-=3
+                        self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
+                        pygame.display.flip()
+                if event.type == pygame.K_q:
+                        self.perso_y+=3 
+                        self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
+                        pygame.display.flip()
+                if event.type == pygame.K_d:
+                        self.perso_y-=3
+                        self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
+                        pygame.display.flip()
+                if event.type == pygame.MOUSEBUTTONUP:
+                        carte.mod(2)
+
         
         
 

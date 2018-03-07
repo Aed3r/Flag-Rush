@@ -5,7 +5,7 @@ pygame.init()
 screenSize = width, height = 1000, 1000
 screen = pygame.display.set_mode(screenSize)
 
-Green = ut.Map(screen, "Green", (0, 0))
+Green = ut.Map(screen, "Green", (0, 0), (100,100))
 Green.load()
 
 perso=ut.Perso(screen, "hero_spritesheet",500,500)
@@ -17,9 +17,7 @@ while not done:
                 if event.type == pygame.QUIT:
                         done = True
                 else:
-                        perso.mouv(event)
-                
-                pygame.display.flip()        
+                        perso.mouv(event, Green)     
 
                         
         
