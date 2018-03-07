@@ -37,25 +37,19 @@ class Perso:
                 self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
 
-        def haut(self,perso_x):
-                perso_x+=3
+        def mouv(self,event):
+                if event.type == pygame.K_UP:
+                        perso_x+=3
+                if event.type == pygame.K_DOWN:
+                        perso_x-=3
+                if event.type == pygame.K_LEFT:
+                        perso_y+=3 
+                if event.type == pygame.K_RIGHT:
+                        perso_y-=3
                 self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
         
-        def bas(self,perso_x):
-                perso_x-=3
-                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
-                pygame.display.flip()
-
-        def droite(self,perso_y):
-                perso_y+=3
-                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
-                pygame.display.flip()
-
-        def gauche(self,perso_y):
-                perso_y-=3
-                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
-                pygame.display.flip()
+        
 
 
 

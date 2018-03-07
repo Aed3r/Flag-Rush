@@ -8,21 +8,21 @@ screen = pygame.display.set_mode(screenSize)
 Green = ut.Map(screen, "Green", (0, 0))
 Green.load()
 
-backIndex = 0
+perso=ut.Perso(screen, "hero_spritesheet",500,500)
+perso.charge()
 
-done = False
+done=False
 while not done:
         for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                         done = True
-                elif event.type == pygame.MOUSEMOTION:
-                        backIndex += 1
-                        if backIndex == 3:
-                                Green.load()
-                                backIndex = 0
-                        else:
-                                Green.mod(backIndex)
+                else:
+                        perso.mouv(event)
+                
+                pygame.display.flip()        
+
+                        
         
-        pygame.display.flip()
+        
 
         
