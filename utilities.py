@@ -26,7 +26,7 @@ class Map:
                 self.spawnCoords = spawnCoords
 
 class Perso:
-        def__init__(self,fenetre,image,perso_x,perso_y):
+        def __init__(self,fenetre,image,perso_x,perso_y):
                 self.fenetre=fenetre
                 self.image=image
                 self.perso_x=perso_x
