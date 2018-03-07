@@ -26,10 +26,10 @@ class Map:
                 self.spawnCoords = spawnCoords
 
 class Perso:
-        def__init__(self,fenetre,image,coords):
+        def __init__(self, fenetre, image, coords):
                 self.fenetre=fenetre
                 self.image=image
-                self.coords=self.get_rect()
+                self.coords = coords
                 
         def charge(self):
                 self.image=pygame.image.load("Resources/Persos/"+ self.image+".png")
@@ -51,6 +51,21 @@ class Perso:
         def gauche(self,coords):
                 self.coords.move(0,0-3)
                 pygame.display.flip()
+
+
+
+
+        
+        
+
+                
+
+
+        
+
+                
+        
+
                 
 
 
