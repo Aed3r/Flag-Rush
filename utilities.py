@@ -27,7 +27,7 @@ class Map:
                 self.spawnCoords = spawnCoords
 
         def getObjectif(self):
-                return self.objectif = objectif
+                return self.objectif 
 
         def setObjectif(self, objectifCoords):
                 self.objectifCoords = objectifCoords
@@ -45,17 +45,16 @@ class Perso:
                 pygame.display.flip()
 
         def mouv(self,event):
-                if event.type == pygame.K_UP:
-                        perso_x+=3
-                if event.type == pygame.K_DOWN:
-                        perso_x-=3
-                if event.type == pygame.K_LEFT:
-                        perso_y+=3 
-                if event.type == pygame.K_RIGHT:
-                        perso_y-=3
+                if event.key == pygame.K_UP:
+                        self.perso_y+=3
+                if event.key == pygame.K_DOWN:
+                        self.perso_y-=3
+                if event.key == pygame.K_LEFT:
+                        self.perso_x+=3 
+                if event.key == pygame.K_RIGHT:
+                        self.perso_x-=3
                 self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
-        
         
 
 
