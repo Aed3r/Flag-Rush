@@ -27,7 +27,7 @@ class Map:
                 self.spawnCoords = spawnCoords
 
         def getObjectif(self):
-                return self.objectif 
+                return self.objectifCoords
 
         def setObjectif(self, objectifCoords):
                 self.objectifCoords = objectifCoords
@@ -36,8 +36,8 @@ class Perso:
         def __init__(self,fenetre,image,perso_x,perso_y):
                 self.fenetre=fenetre
                 self.image=image
-                self.perso_x=perso_x
-                self.perso_y=perso_y
+                self.perso_x = perso_x
+                self.perso_y = perso_y
                 
         def charge(self):
                 self.image=pygame.image.load("Resources/Persos/"+ self.image+".png")
@@ -46,13 +46,13 @@ class Perso:
 
         def mouv(self,event):
                 if event.key == pygame.K_UP:
-                        self.perso_y+=3
-                if event.key == pygame.K_DOWN:
                         self.perso_y-=3
+                if event.key == pygame.K_DOWN:
+                        self.perso_y+=3
                 if event.key == pygame.K_LEFT:
-                        self.perso_x+=3 
+                        self.perso_x-=3 
                 if event.key == pygame.K_RIGHT:
-                        self.perso_x-=3
+                        self.perso_x+=3
                 self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
         
