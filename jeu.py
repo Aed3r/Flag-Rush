@@ -17,7 +17,9 @@ while not done:
                 if event.type == pygame.QUIT:
                         done = True
                 elif event.type == pygame.KEYDOWN:
+                        Green.load()
                         perso.mouv(event)
+                        
                 
                 pygame.display.flip()        
 

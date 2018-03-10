@@ -40,7 +40,8 @@ class Perso:
                 self.perso_y = perso_y
                 
         def charge(self):
-                self.image=pygame.image.load("Resources/Persos/"+ self.image+".png")
+                self.image=pygame.image.load("Resources/Persos/"+ self.image+".png").convert_alpha()
+                self.image.set_colorkey((255,255,255)) 
                 self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
 
