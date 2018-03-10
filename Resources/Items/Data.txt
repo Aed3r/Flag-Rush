@@ -1,0 +1,4 @@
+Pistol,WEAPON,20
+AK47,WEAPON,15
+HealthPack,HEALTH,50
+Ammo,AMMO,30

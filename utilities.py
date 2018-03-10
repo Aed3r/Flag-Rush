@@ -1,36 +1,47 @@
 import pygame
+from enum import Enum
 
-class Map:
-        def __init__(self, baseScreen, backgroundPath, spawnCoords, objectifCoords):
-                self.baseScreen = baseScreen
-                self.backgroundPath = backgroundPath
-                self.spawnCoords = spawnCoords
-                self.background = None
-                self.objectifCoords = objectifCoords
+class ItemTypes(Enum): # Types d'objets pouvant exister
+        WEAPON=1
+        HEALTH=2
+        AMMO=3
 
-        def load(self):
-                self.background = pygame.image.load("Resources/Maps/" + self.backgroundPath + ".png")
-                backgroundSize = self.background.get_rect().size
-                self.baseScreen = pygame.display.set_mode(backgroundSize)
-                self.baseScreen.blit(self.background, (0, 0))
-                pygame.display.flip()
+class Item: # Définis un objet pouvant être utilisé par le joueur
+        def __init__(self, name, type, value):
+                self.name = name
+                self.sprite = pygame.image.load("Resources/Items/Sprites/" + self.name + ".png")
+                self.type = type # Une des options définis par le enum ItemTypes
+                self.value = value # La puissance de l'arme, le nombre de points de vies rétablies...
+
+class Map: # Définis une carte jouable
+        def __init__(self, name, baseScreen, objectifCoords, items, spawnCoords = (0, 0)):
+                self.name = name
+                self.baseScreen = baseScreen # La fenètre principale
+                self.background = pygame.image.load("Resources/Maps/Sprites/" + self.name + ".png")
+                self.spawnCoords = spawnCoords # Où le joueur apparait en début de partie
+                self.objectifCoords = objectifCoords # Où se trouve l'objectif à atteindre
+                self.mapItems = {} # Dictionnaire de tous les items de la map. Clés: coordonnées de l'objet, Valeur: instance de le classe Item définissant l'objet en question
+                with open("Resources/Maps/Data/" + self.name + ".txt") as mapItemsFile: # Récupère et assigne les items pour cette map
+                        for line in mapItemsFile.readlines():
+                                data = line.strip().split(',')
+                                for item in items: # Retrouve l'items grâce au nom
+                                        if item.name == data[0]:
+                                                self.mapItems[(int(data[1]), int(data[2]))] = item # dictionary[key] = value
+
+        def load(self): # Charge la map
+                backgroundSize = self.background.get_rect().size # Récupère la taille de l'image de la map
+                self.baseScreen = pygame.display.set_mode(backgroundSize) # Définis la taille de la fenètre par rapport à la map
+                self.baseScreen.blit(self.background, (0, 0)) # Affiche l'image de la map
+
+                for k, v in self.mapItems.items(): # Itère le dictionnaire des items présents sur cette map
+                         self.baseScreen.blit(v.sprite, k) # Affiche l'image de l'items aux coordonées définies
+
+                pygame.display.flip() # Rafraichi le jeu
         
-        def mod(self, backgroundNumber):
-                self.background = pygame.image.load("Resources/Maps/" + self.backgroundPath + str(backgroundNumber) + ".png")
+        def mod(self, backgroundNumber): # Met à jour l'image de la map sans avoir a créer une nouvelle instance de cette classe
+                self.background = pygame.image.load("Resources/Maps/Sprites/" + self.backgroundPath + str(backgroundNumber) + ".png")
                 self.baseScreen.blit(self.background, (0, 0))
                 pygame.display.flip()
-
-        def getSpawn(self):
-                return self.spawnCoords
-
-        def setSpawn(self, spawnCoords):
-                self.spawnCoords = spawnCoords
-
-        def getObjectif(self):
-                return self.objectifCoords
-
-        def setObjectif(self, objectifCoords):
-                self.objectifCoords = objectifCoords
 
 class Perso:
         def __init__(self,fenetre,image,perso_x,perso_y):
