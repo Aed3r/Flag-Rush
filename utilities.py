@@ -67,6 +67,17 @@ class Perso:
                         self.perso_x+=3
                 self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
                 pygame.display.flip()
+
+class Obstacle:
+        def __init__(self, length, width, coords =(0,0)) :
+                self.length = length
+                self.width = width
+                self.coords = coords
+
+        def load(self, screen):
+                pygame.draw.rect(screen, Color(255, 255, 255, 200), Rect(self.coords.x, self.coords.y, self.width, self.length))
+
+
         
 
 
