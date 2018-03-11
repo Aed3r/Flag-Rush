@@ -26,7 +26,7 @@ with open("Resources/Maps/Obstacles/Green.txt") as obstacleFile: # Charge les ty
 obstacles[0].load(screen)
 
 perso=ut.Perso(screen, "hero_spritesheet",500,500)
-perso.charge()
+perso.load()
 
 done=False
 while not done:
