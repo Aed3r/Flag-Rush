@@ -27,6 +27,11 @@ class Map: # Définis une carte jouable
                                 for item in items: # Retrouve l'items grâce au nom
                                         if item.name == data[0]:
                                                 self.mapItems[(int(data[1]), int(data[2]))] = item # dictionary[key] = value
+                self.mapobstacle = []
+                with open("Resources/Maps/Obstacles/" + self.name + ".txt") as obstacleFile: 
+                        for line in obstacleFile.readlines():
+                                data = line.split(',')
+                                mapobstacle.append(ut.Obstacle(int(data[0]), int(data[1]), (int(data[2]), int(data[3]))))
 
         def load(self): # Charge la map
                 backgroundSize = self.background.get_rect().size # Récupère la taille de l'image de la map
