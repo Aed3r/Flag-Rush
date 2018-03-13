@@ -35,13 +35,10 @@ class Map: # Définis une carte jouable
 
                 for k, v in self.mapItems.items(): # Itère le dictionnaire des items présents sur cette map
                          self.baseScreen.blit(v.sprite, k) # Affiche l'image de l'items aux coordonées définies
-
-                pygame.display.flip() # Rafraichi le jeu
         
         def mod(self, backgroundNumber): # Met à jour l'image de la map sans avoir a créer une nouvelle instance de cette classe
                 self.background = pygame.image.load("Resources/Maps/Sprites/" + self.backgroundPath + str(backgroundNumber) + ".png")
                 self.baseScreen.blit(self.background, (0, 0))
-                pygame.display.flip()
 
 class Perso:
         def __init__(self,fenetre,image,perso_x,perso_y):
@@ -54,7 +51,6 @@ class Perso:
                 self.image=pygame.image.load("Resources/Persos/"+ self.image+".png").convert_alpha()
                 self.image.set_colorkey((255,255,255)) 
                 self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
-                pygame.display.flip()
 
         def mouv(self,event):
                 if event.key == pygame.K_UP:
@@ -66,16 +62,16 @@ class Perso:
                 if event.key == pygame.K_RIGHT:
                         self.perso_x+=3
                 self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
-                pygame.display.flip()
 
 class Obstacle:
-        def __init__(self, length, width, coords =(0,0)) :
+        def __init__(self, length, width, coords = (0,0)) :
                 self.length = length
                 self.width = width
                 self.coords = coords
 
         def load(self, screen):
-                pygame.draw.rect(screen, Color(255, 255, 255, 200), Rect(self.coords.x, self.coords.y, self.width, self.length))
+                pygame.draw.rect(screen, pygame.Color(255, 255, 255, 100), pygame.Rect(self.coords[0], self.coords[0], self.width, self.length))
+
 
 
         
