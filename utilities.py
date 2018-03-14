@@ -31,11 +31,10 @@ class Map: # Définis une carte jouable
                 with open("Resources/Maps/Obstacles/" + self.name + ".txt") as obstacleFile: 
                         for line in obstacleFile.readlines():
                                 data = line.split(',')
-                                mapobstacle.append(ut.Obstacle(int(data[0]), int(data[1]), (int(data[2]), int(data[3]))))
-
-        def load(self): # Charge la map
+                                self.mapobstacle.append(Obstacle(int(data[0]), int(data[1]), (int(data[2]), int(data[3]))))
                 backgroundSize = self.background.get_rect().size # Récupère la taille de l'image de la map
                 self.baseScreen = pygame.display.set_mode(backgroundSize) # Définis la taille de la fenètre par rapport à la map
+        def load(self): # Charge la map
                 self.baseScreen.blit(self.background, (0, 0)) # Affiche l'image de la map
 
                 for k, v in self.mapItems.items(): # Itère le dictionnaire des items présents sur cette map
@@ -46,27 +45,25 @@ class Map: # Définis une carte jouable
                 self.baseScreen.blit(self.background, (0, 0))
 
 class Perso:
-        def __init__(self,fenetre,image,perso_x,perso_y):
+        def __init__(self,fenetre,image,speed):
                 self.fenetre=fenetre
-                self.image=image
-                self.perso_x = perso_x
-                self.perso_y = perso_y
+                self.image=pygame.image.load("Resources/Persos/"+image+".png").convert_alpha()
+                self.speed=speed
+                self.get_rect=self.image.get_rect()
                 
         def load(self):
-                self.image=pygame.image.load("Resources/Persos/"+ self.image+".png").convert_alpha()
-                self.image.set_colorkey((255,255,255)) 
-                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
+                self.fenetre.blit(self.image, self.get_rect)
 
         def mouv(self,event):
                 if event.key == pygame.K_UP:
-                        self.perso_y-=3
+                        self.get_rect=self.get_rect.move(0,-self.speed)
                 if event.key == pygame.K_DOWN:
-                        self.perso_y+=3
+                        self.get_rect=self.get_rect.move(0,self.speed)
                 if event.key == pygame.K_LEFT:
-                        self.perso_x-=3 
+                        self.get_rect=self.get_rect.move(-self.speed,0)                
                 if event.key == pygame.K_RIGHT:
-                        self.perso_x+=3
-                self.fenetre.blit(self.image, (self.perso_x,self.perso_y))
+                        self.get_rect=self.get_rect.move(self.speed,0)
+                self.fenetre.blit(self.image, (self.get_rect))
 
 class Obstacle:
         def __init__(self, length, width, coords = (0,0)) :
