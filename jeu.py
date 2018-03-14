@@ -16,14 +16,8 @@ with open("Resources/Items/Data.txt") as itemsFile: # Charge les types d'items d
 Green = ut.Map("Green", screen, (1000, 1000), items, (500,500))
 Green.load()
 
-obstacles = []
 
-with open("Resources/Maps/Obstacles/Green.txt") as obstacleFile: # Charge les types d'items dans une liste
-        for line in obstacleFile.readlines():
-                data = line.split(',')
-                obstacles.append(ut.Obstacle(int(data[0]), int(data[1]), (int(data[2]), int(data[3]))))
-
-perso=ut.Perso(screen, "hero_spritesheet",1)
+perso=ut.Perso("hero", screen, 3, Green)
 perso.load()
 
 pygame.display.flip() # Rafraichi le jeu
@@ -34,8 +28,10 @@ while done:
                 if event.type == pygame.QUIT:
                         done = False
                 elif event.type == pygame.KEYDOWN:
-                        Green.load()
                         perso.mouv(event)
+        Green.load()
+        perso.load()
+        Green.mapObstacles[0].load(screen)
         pygame.display.flip() # Rafraichi le jeu     
 pygame.quit()
                         

@@ -27,16 +27,17 @@ class Map: # Définis une carte jouable
                                 for item in items: # Retrouve l'items grâce au nom
                                         if item.name == data[0]:
                                                 self.mapItems[(int(data[1]), int(data[2]))] = item # dictionary[key] = value
-                self.mapobstacle = []
+                self.mapObstacles = []
                 with open("Resources/Maps/Obstacles/" + self.name + ".txt") as obstacleFile: 
                         for line in obstacleFile.readlines():
                                 data = line.split(',')
-                                self.mapobstacle.append(Obstacle(int(data[0]), int(data[1]), (int(data[2]), int(data[3]))))
+                                self.mapObstacles.append(Obstacle(int(data[0]), int(data[1]), (int(data[2]), int(data[3]))))
+
                 backgroundSize = self.background.get_rect().size # Récupère la taille de l'image de la map
                 self.baseScreen = pygame.display.set_mode(backgroundSize) # Définis la taille de la fenètre par rapport à la map
+
         def load(self): # Charge la map
                 self.baseScreen.blit(self.background, (0, 0)) # Affiche l'image de la map
-
                 for k, v in self.mapItems.items(): # Itère le dictionnaire des items présents sur cette map
                          self.baseScreen.blit(v.sprite, k) # Affiche l'image de l'items aux coordonées définies
         
@@ -45,34 +46,42 @@ class Map: # Définis une carte jouable
                 self.baseScreen.blit(self.background, (0, 0))
 
 class Perso:
-        def __init__(self,fenetre,image,speed):
-                self.fenetre=fenetre
-                self.image=pygame.image.load("Resources/Persos/"+image+".png").convert_alpha()
-                self.speed=speed
-                self.get_rect=self.image.get_rect()
+        def __init__(self, name, fenetre, speed, map):
+                self.name = name
+                self.fenetre = fenetre
+                self.image = pygame.image.load("Resources/Persos/" + name + ".png").convert_alpha()
+                self.rect = self.image.get_rect()
+                self.rect = self.rect.move(map.spawnCoords)
+                self.speed = speed
+                self.map = map
                 
         def load(self):
-                self.fenetre.blit(self.image, self.get_rect)
+                self.fenetre.blit(self.image, self.rect)
 
         def mouv(self,event):
                 if event.key == pygame.K_UP:
-                        self.get_rect=self.get_rect.move(0,-self.speed)
+                        self.rect=self.rect.move(0,-self.speed)
+                        if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                self.rect=self.rect.move(0,self.speed)
                 if event.key == pygame.K_DOWN:
-                        self.get_rect=self.get_rect.move(0,self.speed)
+                        self.rect=self.rect.move(0,self.speed)
+                        if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                self.rect=self.rect.move(0,-self.speed)
                 if event.key == pygame.K_LEFT:
-                        self.get_rect=self.get_rect.move(-self.speed,0)                
+                        self.rect=self.rect.move(-self.speed,0)   
+                        if self.rect.collidelist(self.map.mapObstacles) != -1:     
+                                self.rect=self.rect.move(self.speed, 0)        
                 if event.key == pygame.K_RIGHT:
-                        self.get_rect=self.get_rect.move(self.speed,0)
-                self.fenetre.blit(self.image, (self.get_rect))
+                        self.rect=self.rect.move(self.speed,0)
+                        if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                self.rect=self.rect.move(-self.speed, 0)
 
 class Obstacle:
         def __init__(self, length, width, coords = (0,0)) :
-                self.length = length
-                self.width = width
-                self.coords = coords
+                self.rect = pygame.Rect(coords[0],coords[1], width, length)
 
         def load(self, screen):
-                pygame.draw.rect(screen, pygame.Color(255, 255, 255, 100), pygame.Rect(self.coords[0], self.coords[0], self.width, self.length))
+                pygame.draw.rect(screen, pygame.Color(255, 255, 255, 100), self.rect)
 
 
 
