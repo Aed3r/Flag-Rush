@@ -18,6 +18,8 @@ class Map: # Définis une carte jouable
                 self.name = name
                 self.baseScreen = baseScreen # La fenètre principale
                 self.background = pygame.image.load("Resources/Maps/Sprites/" + self.name + ".png")
+                backgroundSize = self.background.get_rect().size # Récupère la taille de l'image de la map
+                self.baseScreen = pygame.display.set_mode(backgroundSize) # Définis la taille de la fenètre par rapport à la map
                 self.spawnCoords = spawnCoords # Où le joueur apparait en début de partie
                 self.objectifCoords = objectifCoords # Où se trouve l'objectif à atteindre
                 self.mapItems = {} # Dictionnaire de tous les items de la map. Clés: coordonnées de l'objet, Valeur: instance de le classe Item définissant l'objet en question
@@ -33,8 +35,6 @@ class Map: # Définis une carte jouable
                                 data = line.split(',')
                                 self.mapObstacles.append(Obstacle(int(data[0]), int(data[1]), (int(data[2]), int(data[3]))))
 
-                backgroundSize = self.background.get_rect().size # Récupère la taille de l'image de la map
-                self.baseScreen = pygame.display.set_mode(backgroundSize) # Définis la taille de la fenètre par rapport à la map
 
         def load(self): # Charge la map
                 self.baseScreen.blit(self.background, (0, 0)) # Affiche l'image de la map
@@ -46,19 +46,21 @@ class Map: # Définis une carte jouable
                 self.baseScreen.blit(self.background, (0, 0))
 
 class Perso:
-        def __init__(self, name, fenetre, speed, map):
+        def __init__(self, name, fenetre, speed, maxItems, map):
                 self.name = name
                 self.fenetre = fenetre
                 self.image = pygame.image.load("Resources/Persos/" + name + ".png").convert_alpha()
                 self.rect = self.image.get_rect()
                 self.rect = self.rect.move(map.spawnCoords)
                 self.speed = speed
+                self.maxItems = maxItems
                 self.map = map
+                self.items = []
                 
         def load(self):
                 self.fenetre.blit(self.image, self.rect)
 
-        def mouv(self,event):
+        def mouv(self, event):
                 if event.key == pygame.K_UP:
                         self.rect=self.rect.move(0,-self.speed)
                         if self.rect.collidelist(self.map.mapObstacles) != -1:
@@ -75,6 +77,15 @@ class Perso:
                         self.rect=self.rect.move(self.speed,0)
                         if self.rect.collidelist(self.map.mapObstacles) != -1:
                                 self.rect=self.rect.move(-self.speed, 0)
+                if event.key == pygame.K_e: # Ramasser un item
+                        if len(self.items) <= self.maxItems: # Vérifie que le perso a encore de la place dans son inventaire
+                                for k, v in self.map.mapItems.items(): # Cherche dans la liste d'items de cette map (k: coordonnées, v: item)
+                                        itemRect = v.sprite.get_rect().move(k)
+                                        if self.rect.colliderect(itemRect): # Vérifie si le perso se trouve sur un item
+                                                self.items.append(v) # Ajoute l'item à l'inventaire du perso    
+                                                del self.map.mapItems[k] # Enlève l'item de la map
+                                                break # Sort de la boucle, sinon crash car dictionnaire modifié
+                                        
 
 class Obstacle:
         def __init__(self, length, width, coords = (0,0)) :
