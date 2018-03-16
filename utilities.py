@@ -62,21 +62,65 @@ class Perso:
 
         def mouv(self, event):
                 if event.key == pygame.K_UP:
-                        self.rect=self.rect.move(0,-self.speed)
-                        if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                self.rect=self.rect.move(0,self.speed)
-                if event.key == pygame.K_DOWN:
-                        self.rect=self.rect.move(0,self.speed)
-                        if self.rect.collidelist(self.map.mapObstacles) != -1:
+                        if event.key == pygame.K_DOWN:
+                                self.rect=self.rect.move(0,0)
+                        if event.key == pygame.K_LEFT:
+                                self.rect=self.rect.move(-self.speed,-self.speed)   
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:     
+                                        self.rect=self.rect.move(self.speed, self.speed)        
+                        if event.key == pygame.K_RIGHT:
+                                self.rect=self.rect.move(self.speed,-self.speed)
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                        self.rect=self.rect.move(-self.speed, self.speed)                    
+                        else:
                                 self.rect=self.rect.move(0,-self.speed)
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                        self.rect=self.rect.move(0,self.speed)
+                if event.key == pygame.K_DOWN:
+                        if event.key == pygame.K_UP:
+                                self.rect=self.rect.move(0,0)
+                        if event.key == pygame.K_LEFT:
+                                self.rect=self.rect.move(-self.speed,self.speed)   
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:     
+                                        self.rect=self.rect.move(self.speed, -self.speed)        
+                        if event.key == pygame.K_RIGHT:
+                                self.rect=self.rect.move(self.speed,self.speed)
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                        self.rect=self.rect.move(-self.speed, -self.speed)
+                        else:
+                                self.rect=self.rect.move(0,self.speed)
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                        self.rect=self.rect.move(0,-self.speed)
                 if event.key == pygame.K_LEFT:
-                        self.rect=self.rect.move(-self.speed,0)   
-                        if self.rect.collidelist(self.map.mapObstacles) != -1:     
-                                self.rect=self.rect.move(self.speed, 0)        
+                        if event.key == pygame.K_DOWN:
+                                self.rect=self.rect.move(-self.speed,self.speed)
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                        self.rect=self.rect.move(self.speed,-self.speed)
+                        if event.key == pygame.K_UP:
+                                self.rect=self.rect.move(-self.speed,-self.speed)
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                        self.rect=self.rect.move(self.speed,self.speed)        
+                        if event.key == pygame.K_RIGHT:
+                                self.rect=self.rect.move(0,0)
+                        else:
+                                self.rect=self.rect.move(-self.speed,0)   
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:     
+                                        self.rect=self.rect.move(self.speed, 0)        
                 if event.key == pygame.K_RIGHT:
-                        self.rect=self.rect.move(self.speed,0)
-                        if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                self.rect=self.rect.move(-self.speed, 0)
+                        if event.key == pygame.K_DOWN:
+                                self.rect=self.rect.move(self.speed,self.speed)
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                        self.rect=self.rect.move(-self.speed,-self.speed)
+                        if event.key == pygame.K_LEFT:
+                                self.rect=self.rect.move(0,0)          
+                        if event.key == pygame.K_UP:
+                                self.rect=self.rect.move(self.speed,-self.speed)
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                        self.rect=self.rect.move(-self.speed,self.speed)
+                        else:
+                                self.rect=self.rect.move(self.speed,0)
+                                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                                        self.rect=self.rect.move(-self.speed, 0)
                 if event.key == pygame.K_e: # Ramasser un item
                         if len(self.items) <= self.maxItems: # Vérifie que le perso a encore de la place dans son inventaire
                                 for k, v in self.map.mapItems.items(): # Cherche dans la liste d'items de cette map (k: coordonnées, v: item)
