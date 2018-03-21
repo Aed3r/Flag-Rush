@@ -18,7 +18,7 @@ Green = ut.Map("Green", screen, (1000, 1000), items, (500,500))
 Green.load()
 
 
-perso=ut.Perso("hero", screen, 1, 5, Green)
+perso=ut.Perso("hero", screen, 1, 5, Green, 100)
 perso.load()
 
 pygame.display.flip() # Rafraichi le jeu
