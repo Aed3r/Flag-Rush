@@ -11,7 +11,7 @@ items = []
 with open("Resources/Items/Data.txt") as itemsFile: # Charge les types d'items dans une liste
         for line in itemsFile.readlines():
                 data = line.split(',')
-                if data(data[1] == "WEAPON"):
+                if data[1] == "WEAPON":
                     items.append(ut.Item(data[0], data[1], float(data[2]), ut.Weapon(float(data[3]), int(data[4]), data[5])))
                 else:
                     items.append(ut.Item(data[0], data[1], float(data[2])))

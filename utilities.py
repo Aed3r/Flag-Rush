@@ -1,7 +1,7 @@
 import pygame
 
 class Item: # Définis un objet pouvant être utilisé par le joueur
-        def __init__(self, name, type, value, characteristic = None):
+        def __init__(self, name, type, value, characteristics = None):
                 self.name = name
                 self.sprite = pygame.image.load("Resources/Items/Sprites/" + self.name + ".png")
                 self.type = type # Une des options définis par le enum ItemTypes
