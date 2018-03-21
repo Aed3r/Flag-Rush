@@ -51,38 +51,38 @@ class Perso:
         def __init__(self, name, fenetre, speed, maxItems, map, maxHealth):
                 self.name = name
                 self.fenetre = fenetre
-                self.image = pygame.image.load("Resources/Persos/" + name + ".png").convert_alpha()
-                self.rect = self.image.get_rect()
-                self.rect = self.rect.move(map.spawnCoords)
-                self.speed = speed
-                self.maxItems = maxItems
-                self.map = map
+                self.image = pygame.image.load("Resources/Persos/" + name + ".png").convert_alpha() 
+                self.rect = self.image.get_rect() # Définis l'image du personnage comme un rectangle
+                self.rect = self.rect.move(map.spawnCoords) # Récupère les coordonnées de spawn du perso
+                self.speed = speed # Vitesse de déplacement du personnage selon le choix du joueur
+                self.maxItems = maxItems # Taille de l'inventaire 
+                self.map = map # Map dans laquelle on se trouve
                 self.items = []
-                self.health = maxHealth
-                self.maxhealth = maxHealth
-                self.ammo = 0
+                self.health = maxHealth # Met le nombre de points de vie de départ au maximum
+                self.maxhealth = maxHealth # Points de vie maximum que le perso peut avoir
+                self.ammo = 25 # Le perso a 25 munitions au départ de la partie
 
         def load(self):
-                self.fenetre.blit(self.image, self.rect)
+                self.fenetre.blit(self.image, self.rect) # Affiche l'image du personnage au niveau du point de spawn
 
-        def mouv(self,action):
-            if action == "haut":
-                self.rect=self.rect.move(0,-self.speed)
-                if self.rect.collidelist(self.map.mapObstacles) != -1:
-                    self.rect=self.rect.move(0,self.speed)
+        def mouv(self,action): 
+            if action == "haut": 
+                self.rect=self.rect.move(0,-self.speed) # déplace le perso vers le haut 
+                if self.rect.collidelist(self.map.mapObstacles) != -1: # si le perso se trouve sur un obstacle
+                    self.rect=self.rect.move(0,self.speed) # Ramène le perso à la position précédente
             if action=="bas":
-                self.rect=self.rect.move(0,self.speed)
+                self.rect=self.rect.move(0,self.speed) # déplace le perso vers le bas
                 if self.rect.collidelist(self.map.mapObstacles) != -1:
                     self.rect=self.rect.move(0,-self.speed)
             if action=="gauche":
-                self.rect=self.rect.move(-self.speed,0)
+                self.rect=self.rect.move(-self.speed,0) # déplace le perso vers la gauche
                 if self.rect.collidelist(self.map.mapObstacles) != -1:
                     self.rect=self.rect.move(self.speed, 0)
             if action=="droite":
-                self.rect=self.rect.move(self.speed,0)
+                self.rect=self.rect.move(self.speed,0) # déplace le perso vers la droite
                 if self.rect.collidelist(self.map.mapObstacles) != -1:
                     self.rect=self.rect.move(-self.speed, 0)
-            if action=="ramasser":
+            if action=="ramasser": 
                 if len(self.items) <= self.maxItems: # Vérifie que le perso a encore de la place dans son inventaire
                                 for k, v in self.map.mapItems.items(): # Cherche dans la liste d'items de cette map (k: coordonnées, v: item)
                                         itemRect = v.sprite.get_rect().move(k)
