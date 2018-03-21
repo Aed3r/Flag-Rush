@@ -1,18 +1,19 @@
 import pygame
 
 class Item: # Définis un objet pouvant être utilisé par le joueur
-        def __init__(self, name, type, value):
+        def __init__(self, name, type, value, characteristic = None):
                 self.name = name
                 self.sprite = pygame.image.load("Resources/Items/Sprites/" + self.name + ".png")
                 self.type = type # Une des options définis par le enum ItemTypes
                 self.value = value # La puissance de l'arme, le nombre de points de vies rétablies...
+                if type == "WEAPON":
+                        self.characteristics = characteristics
 
 class Weapon: # Classe auxiliaire pour définir les caractéristiques d'une arme
-        def __init__(self, aim = 95, speed = 20, isExplosive = False, power = 1):
+        def __init__(self, aim = 95, speed = 20, isExplosive = False):
                 self.aim = aim # La précision de tir en pourcentage. 100% correspond à une ligne droite
-                self.speed = speed # La vitesse de la balle 
+                self.speed = speed # La vitesse du projectile
                 self.isExplosive = isExplosive # Définis si le projectile explose sur impact (ce qui fait des dégats plus répandus)
-                self.power = power # La puissance du projectile. Correspond au nombre d'ennemis qu'elle peut traverser
 
 class Map: # Définis une carte jouable
         def __init__(self, name, baseScreen, objectifCoords, items, spawnCoords = (0, 0)):
