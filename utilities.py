@@ -88,7 +88,7 @@ class Perso:
                                         itemRect = v.sprite.get_rect().move(k)
                                         if self.rect.colliderect(itemRect): # Vérifie si le perso se trouve sur un item
                                                 if v.type == "HEALTH" : #verifie que l'item est du type santé
-                                                        if self.health <= self.maxhealth : #vérifie que le perso n'est pas au max de sa vie
+                                                        if self.health < self.maxhealth : #vérifie que le perso n'est pas au max de sa vie
                                                                 self.health = self.health + v.value #ajoute la valeur de l'item santé à la santé du perso
                                                                 if self.health >= self.maxhealth :  # verifie si le niveau de santé ajouté dépasse la valeur maximale de santé
                                                                         self.health = self.maxhealth    #ramène le niveau de santé au maximum
