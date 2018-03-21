@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 import utilities as ut
 
 pygame.init()
@@ -17,25 +18,36 @@ Green = ut.Map("Green", screen, (1000, 1000), items, (500,500))
 Green.load()
 
 
-perso=ut.Perso("hero", screen, 3, 5, Green)
+perso=ut.Perso("hero", screen, 1, 5, Green)
 perso.load()
 
 pygame.display.flip() # Rafraichi le jeu
-pygame.key.set_repeat(1,15)
 done=True
 while done:
+        pygame.time.delay(5)
+        key=pygame.key.get_pressed()
+        if key[K_UP]:
+            perso.mouv("haut")
+        if key[K_DOWN]:
+            perso.mouv("bas")
+        if key[K_LEFT]:
+            perso.mouv("gauche")
+        if key[K_RIGHT]:
+            perso.mouv("droite")
+        if key[K_e]: #Ramasser un item
+            perso.mouv("ramasser")
+
         for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                        done = False
-                elif event.type == pygame.KEYDOWN:
-                        perso.mouv(event)
+            if event.type==pygame.QUIT:
+                done = False
+
         Green.load()
         perso.load()
         Green.mapObstacles[0].load(screen)
-        pygame.display.flip() # Rafraichi le jeu     
+        pygame.display.flip() # Rafraichi le jeu
 pygame.quit()
-                        
-        
-        
 
-        
+
+
+
+
