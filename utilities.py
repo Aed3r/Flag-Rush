@@ -1,12 +1,4 @@
 import pygame
-from enum import Enum
-
-
-
-class ItemTypes(Enum): # Types d'objets pouvant exister
-        WEAPON=1
-        HEALTH=2
-        AMMO=3
 
 class Item: # Définis un objet pouvant être utilisé par le joueur
         def __init__(self, name, type, value):
@@ -48,7 +40,7 @@ class Map: # Définis une carte jouable
                 self.baseScreen.blit(self.background, (0, 0))
 
 class Perso:
-        def __init__(self, name, fenetre, speed, maxItems, map):
+        def __init__(self, name, fenetre, speed, maxItems, map, maxHealth):
                 self.name = name
                 self.fenetre = fenetre
                 self.image = pygame.image.load("Resources/Persos/" + name + ".png").convert_alpha()
@@ -58,6 +50,9 @@ class Perso:
                 self.maxItems = maxItems
                 self.map = map
                 self.items = []
+                self.health = maxHealth
+                self.maxhealth = maxHealth
+                self.ammo = 0
 
         def load(self):
                 self.fenetre.blit(self.image, self.rect)
@@ -81,16 +76,28 @@ class Perso:
                     self.rect=self.rect.move(-self.speed, 0)
             if action=="ramasser":
                 if len(self.items) <= self.maxItems: # Vérifie que le perso a encore de la place dans son inventaire
-                    for k, v in self.map.mapItems.items(): # Cherche dans la liste d'items de cette map (k: coordonnées, v: item)
-                        itemRect = v.sprite.get_rect().move(k)
-                        if self.rect.colliderect(itemRect): # Vérifie si le perso se trouve sur un item
-                            self.items.append(v) # Ajoute l'item à l'inventaire du perso
-                            del self.map.mapItems[k] # Enlève l'item de la map
-                            break # Sort de la boucle, sinon crash car dictionnaire modifié
+                                for k, v in self.map.mapItems.items(): # Cherche dans la liste d'items de cette map (k: coordonnées, v: item)
+                                        itemRect = v.sprite.get_rect().move(k)
+                                        if self.rect.colliderect(itemRect): # Vérifie si le perso se trouve sur un item
+                                                if v.type == "HEALTH" : #verifie que l'item est du type santé
+                                                        if self.health <= self.maxhealth : #vérifie que le perso n'est pas au max de sa vie
+                                                                self.health = self.health + v.value #ajoute la valeur de l'item santé à la santé du perso
+                                                                if self.health >= self.maxhealth :  # verifie si le niveau de santé ajouté dépasse la valeur maximale de santé
+                                                                        self.health = self.maxhealth    #ramène le niveau de santé au maximum
+                                                elif v.type == "AMMO" :
+                                                        self.ammo = self.ammo + v.value
+                                                elif v.type == "WEAPON" :
+                                                    self.items.append(v) # Ajoute l'item à l'inventaire du perso
 
+                                                del self.map.mapItems[k] # Enlève l'item de la map
+                                                break # Sort de la boucle, sinon crash car dictionnaire modifié
 
-
-
+class Bullet :
+         def __init__(self, coords, direction, map, perso):
+             self.direction = direction
+             self.rect = rect(coords[0],coords[1], 1, 1)
+             while not self.rect.collidelist(map.mapObstacles) and not self.rect.colliderect(perso.rect):
+                    pygame.rect.move(direction[0], direction[1])
 
 class Obstacle:
         def __init__(self, length, width, coords = (0,0)) :
