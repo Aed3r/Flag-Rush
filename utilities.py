@@ -1,6 +1,8 @@
 import pygame
 from enum import Enum
 
+
+
 class ItemTypes(Enum): # Types d'objets pouvant exister
         WEAPON=1
         HEALTH=2
@@ -30,7 +32,7 @@ class Map: # Définis une carte jouable
                                         if item.name == data[0]:
                                                 self.mapItems[(int(data[1]), int(data[2]))] = item # dictionary[key] = value
                 self.mapObstacles = []
-                with open("Resources/Maps/Obstacles/" + self.name + ".txt") as obstacleFile: 
+                with open("Resources/Maps/Obstacles/" + self.name + ".txt") as obstacleFile:
                         for line in obstacleFile.readlines():
                                 data = line.split(',')
                                 self.mapObstacles.append(Obstacle(int(data[0]), int(data[1]), (int(data[2]), int(data[3]))))
@@ -40,7 +42,7 @@ class Map: # Définis une carte jouable
                 self.baseScreen.blit(self.background, (0, 0)) # Affiche l'image de la map
                 for k, v in self.mapItems.items(): # Itère le dictionnaire des items présents sur cette map
                          self.baseScreen.blit(v.sprite, k) # Affiche l'image de l'items aux coordonées définies
-        
+
         def mod(self, backgroundNumber): # Met à jour l'image de la map sans avoir a créer une nouvelle instance de cette classe
                 self.background = pygame.image.load("Resources/Maps/Sprites/" + self.backgroundPath + str(backgroundNumber) + ".png")
                 self.baseScreen.blit(self.background, (0, 0))
@@ -56,80 +58,39 @@ class Perso:
                 self.maxItems = maxItems
                 self.map = map
                 self.items = []
-                
+
         def load(self):
                 self.fenetre.blit(self.image, self.rect)
 
-        def mouv(self, event):
-                if event.key == pygame.K_UP:
-                        if event.key == pygame.K_DOWN:
-                                self.rect=self.rect.move(0,0)
-                        if event.key == pygame.K_LEFT:
-                                self.rect=self.rect.move(-self.speed,-self.speed)   
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:     
-                                        self.rect=self.rect.move(self.speed, self.speed)        
-                        if event.key == pygame.K_RIGHT:
-                                self.rect=self.rect.move(self.speed,-self.speed)
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                        self.rect=self.rect.move(-self.speed, self.speed)                    
-                        else:
-                                self.rect=self.rect.move(0,-self.speed)
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                        self.rect=self.rect.move(0,self.speed)
-                if event.key == pygame.K_DOWN:
-                        if event.key == pygame.K_UP:
-                                self.rect=self.rect.move(0,0)
-                        if event.key == pygame.K_LEFT:
-                                self.rect=self.rect.move(-self.speed,self.speed)   
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:     
-                                        self.rect=self.rect.move(self.speed, -self.speed)        
-                        if event.key == pygame.K_RIGHT:
-                                self.rect=self.rect.move(self.speed,self.speed)
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                        self.rect=self.rect.move(-self.speed, -self.speed)
-                        else:
-                                self.rect=self.rect.move(0,self.speed)
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                        self.rect=self.rect.move(0,-self.speed)
-                if event.key == pygame.K_LEFT:
-                        if event.key == pygame.K_DOWN:
-                                self.rect=self.rect.move(-self.speed,self.speed)
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                        self.rect=self.rect.move(self.speed,-self.speed)
-                        if event.key == pygame.K_UP:
-                                self.rect=self.rect.move(-self.speed,-self.speed)
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                        self.rect=self.rect.move(self.speed,self.speed)        
-                        if event.key == pygame.K_RIGHT:
-                                self.rect=self.rect.move(0,0)
-                        else:
-                                self.rect=self.rect.move(-self.speed,0)   
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:     
-                                        self.rect=self.rect.move(self.speed, 0)        
-                if event.key == pygame.K_RIGHT:
-                        if event.key == pygame.K_DOWN:
-                                self.rect=self.rect.move(self.speed,self.speed)
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                        self.rect=self.rect.move(-self.speed,-self.speed)
-                        if event.key == pygame.K_LEFT:
-                                self.rect=self.rect.move(0,0)          
-                        if event.key == pygame.K_UP:
-                                self.rect=self.rect.move(self.speed,-self.speed)
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                        self.rect=self.rect.move(-self.speed,self.speed)
-                        else:
-                                self.rect=self.rect.move(self.speed,0)
-                                if self.rect.collidelist(self.map.mapObstacles) != -1:
-                                        self.rect=self.rect.move(-self.speed, 0)
-                if event.key == pygame.K_e: # Ramasser un item
-                        if len(self.items) <= self.maxItems: # Vérifie que le perso a encore de la place dans son inventaire
-                                for k, v in self.map.mapItems.items(): # Cherche dans la liste d'items de cette map (k: coordonnées, v: item)
-                                        itemRect = v.sprite.get_rect().move(k)
-                                        if self.rect.colliderect(itemRect): # Vérifie si le perso se trouve sur un item
-                                                self.items.append(v) # Ajoute l'item à l'inventaire du perso    
-                                                del self.map.mapItems[k] # Enlève l'item de la map
-                                                break # Sort de la boucle, sinon crash car dictionnaire modifié
-                                        
+        def mouv(self,action):
+            if action == "haut":
+                self.rect=self.rect.move(0,-self.speed)
+                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                    self.rect=self.rect.move(0,self.speed)
+            if action=="bas":
+                self.rect=self.rect.move(0,self.speed)
+                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                    self.rect=self.rect.move(0,-self.speed)
+            if action=="gauche":
+                self.rect=self.rect.move(-self.speed,0)
+                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                    self.rect=self.rect.move(self.speed, 0)
+            if action=="droite":
+                self.rect=self.rect.move(self.speed,0)
+                if self.rect.collidelist(self.map.mapObstacles) != -1:
+                    self.rect=self.rect.move(-self.speed, 0)
+            if action=="ramasser":
+                if len(self.items) <= self.maxItems: # Vérifie que le perso a encore de la place dans son inventaire
+                    for k, v in self.map.mapItems.items(): # Cherche dans la liste d'items de cette map (k: coordonnées, v: item)
+                        itemRect = v.sprite.get_rect().move(k)
+                        if self.rect.colliderect(itemRect): # Vérifie si le perso se trouve sur un item
+                            self.items.append(v) # Ajoute l'item à l'inventaire du perso
+                            del self.map.mapItems[k] # Enlève l'item de la map
+                            break # Sort de la boucle, sinon crash car dictionnaire modifié
+
+
+
+
 
 class Obstacle:
         def __init__(self, length, width, coords = (0,0)) :
@@ -140,26 +101,26 @@ class Obstacle:
 
 
 
-        
 
 
 
 
-        
-        
-
-                
-
-
-        
-
-                
-        
-
-                
 
 
 
-                
-                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
