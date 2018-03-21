@@ -101,11 +101,17 @@ class Perso:
                                                 break # Sort de la boucle, sinon crash car dictionnaire modifié
 
 class Bullet :
-         def __init__(self, coords, direction, map, perso):
-             self.direction = direction
-             self.rect = rect(coords[0],coords[1], 1, 1)
+         def __init__(self, x, y, map, perso, screen):
+             realMouseCoords = pygame.mouse.get_pos()
+             screenPos = (perso.rect.x - (screen.width)/2, perso.rect.y - (screen.height)/2)
+             screenMouseCoords = realMouseCoords + screenPos
+             self.direction =
+             self.rect = rect(x, y, 1, 1)
              while not self.rect.collidelist(map.mapObstacles) and not self.rect.colliderect(perso.rect):
-                    pygame.rect.move(direction[0], direction[1])
+                    pygame.self.rect.move(self.rect.x + dircetion[0], self.rect.y + direction[1])
+
+        
+
 
 class Obstacle:
         def __init__(self, length, width, coords = (0,0)) :
