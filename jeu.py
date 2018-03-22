@@ -42,7 +42,7 @@ def draw(): # Retrace tout les éléments du jeu. Ordre important
 def react():
     global drawObstacles
 
-    pygame.time.delay(5) # Freeze le programme pendant 5ms pour ralentir le perso
+    pygame.time.Clock().tick(150) # Ralentit la vitesse de la boucle
     key=pygame.key.get_pressed() # liste les appui sur le clavier
     if key[K_UP]: # Appui sur la flèche du haut
         char.mouv("haut")
