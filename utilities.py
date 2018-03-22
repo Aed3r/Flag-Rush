@@ -27,7 +27,7 @@ class Map: # Définis une carte jouable
                 self.spawnCoords = spawnCoords # Où le joueur apparait en début de partie
                 self.objectifCoords = objectifCoords # Où se trouve l'objectif à atteindre
                 self.mapItems = {} # Dictionnaire de tous les items de la map. Clés: coordonnées de l'objet, Valeur: instance de le classe Item définissant l'objet en question
-                with open("Resources/Maps/Data/" + self.name + ".txt") as mapItemsFile: # Récupère et assigne les items pour cette map
+                with open("Resources/Maps/Items/" + self.name + ".txt") as mapItemsFile: # Récupère et assigne les items pour cette map
                         for line in mapItemsFile.readlines():
                                 data = line.strip().split(',')
                                 for item in items: # Retrouve l'items grâce au nom
@@ -61,7 +61,7 @@ class Perso:
         def __init__(self, name, fenetre, speed, maxItems, map, maxHealth):
                 self.name = name
                 self.fenetre = fenetre
-                self.image = pygame.image.load("Resources/Persos/" + name + ".png").convert_alpha() 
+                self.image = pygame.image.load("Resources/Persos/Sprites/" + name + ".png").convert_alpha() 
                 self.rect = self.image.get_rect() # Définis l'image du personnage comme un rectangle
                 self.rect = self.rect.move(map.spawnCoords) # Récupère les coordonnées de spawn du perso
                 self.speed = speed # Vitesse de déplacement du personnage selon le choix du joueur
@@ -75,21 +75,21 @@ class Perso:
         def draw(self):
                 self.fenetre.blit(self.image, self.rect) # Affiche l'image du personnage au niveau du point de spawn
 
-        def mouv(self,action): 
+        def mouv(self, action): 
             if action == "haut": 
-                self.rect=self.rect.move(0,-self.speed) # déplace le perso vers le haut 
+                self.rect = self.rect.move(0, -self.speed) # déplace le perso vers le haut 
                 if self.rect.collidelist(self.map.mapObstacles) != -1: # si le perso se trouve sur un obstacle
-                    self.rect=self.rect.move(0,self.speed) # Ramène le perso à la position précédente
-            if action=="bas":
-                self.rect=self.rect.move(0,self.speed) # déplace le perso vers le bas
+                    self.rect = self.rect.move(0, self.speed) # Ramène le perso à la position précédente
+            if action == "bas":
+                self.rect=self.rect.move(0, self.speed) # déplace le perso vers le bas
                 if self.rect.collidelist(self.map.mapObstacles) != -1:
-                    self.rect=self.rect.move(0,-self.speed)
-            if action=="gauche":
-                self.rect=self.rect.move(-self.speed,0) # déplace le perso vers la gauche
+                    self.rect = self.rect.move(0, -self.speed)
+            if action == "gauche":
+                self.rect = self.rect.move(-self.speed, 0) # déplace le perso vers la gauche
                 if self.rect.collidelist(self.map.mapObstacles) != -1:
-                    self.rect=self.rect.move(self.speed, 0)
-            if action=="droite":
-                self.rect=self.rect.move(self.speed,0) # déplace le perso vers la droite
+                    self.rect = self.rect.move(self.speed, 0)
+            if action == "droite":
+                self.rect = self.rect.move(self.speed, 0) # déplace le perso vers la droite
                 if self.rect.collidelist(self.map.mapObstacles) != -1:
                     self.rect=self.rect.move(-self.speed, 0)
             if action=="ramasser": 
@@ -127,7 +127,7 @@ class Obstacle:
                 self.rect = pygame.Rect(coords[0],coords[1], width, length)
 
         def draw(self, screen):
-                pygame.draw.rect(screen, pygame.Color(255, 255, 255, 100), self.rect)
+                pygame.draw.rect(screen, pygame.Color(191, 63, 63), self.rect)
 
 
 

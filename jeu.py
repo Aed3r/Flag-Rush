@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import utilities as ut
+import os
 
 pygame.init()
 screenSize = width, height = 1000, 1000
@@ -15,16 +16,27 @@ with open("Resources/Items/Data.txt") as itemsFile: # Charge les types d'items d
                 else:
                     items.append(ut.Item(data[0], data[1], float(data[2])))
 
-Green = ut.Map("Green", screen, (1000, 1000), items, (500,500)) # Défini une map de taille 1000 sur 1000 et fait apparaître le perso au point (500,500)
-perso=ut.Perso("hero", screen, 1, 5, Green, 100) # Défini un perso de vitesse 1, qui peut avoir 5 items à la fois et qui a 100 point de vie max
+maps = []
+with open("Resources/Maps/Data.txt") as mapsFile:
+    for line in mapsFile.readlines():
+        data = line.split(',')
+        maps.append(ut.Map(data[0], screen, (int(data[1]), int(data[2])), items, (int(data[3]), int(data[4]))))
+map = maps[0] # Map choisie par l'utilisateur
+
+characters = []
+with open("Resources/Persos/Data.txt") as charactersFile:
+    for line in charactersFile.readlines():
+        data = line.split(',')
+        characters.append(ut.Perso(data[0], screen, float(data[1]), int(data[2]), map, int(data[3])))
+char = characters[0] # Perso choisi par l'utilisateur
 
 drawObstacles = False
 def draw(): # Retrace tout les éléments du jeu. Ordre important
-    Green.draw() # Dessine la map
-    Green.drawItems() # Dessine les items
-    perso.draw() # dessine le perso à ses nouvelles coordonnées
+    map.draw() # Dessine la map
+    map.drawItems() # Dessine les items
+    char.draw() # dessine le perso à ses nouvelles coordonnées
     if drawObstacles:
-        Green.drawObstacles()
+        map.drawObstacles()
     pygame.display.flip() # Rafraichi le jeu
 
 def react():
@@ -33,15 +45,15 @@ def react():
     pygame.time.delay(5) # Freeze le programme pendant 5ms pour ralentir le perso
     key=pygame.key.get_pressed() # liste les appui sur le clavier
     if key[K_UP]: # Appui sur la flèche du haut
-        perso.mouv("haut")
+        char.mouv("haut")
     if key[K_DOWN]: # Appui sur la flèche du bas
-        perso.mouv("bas")
+        char.mouv("bas")
     if key[K_LEFT]: # Appui sur la flèche de gauche
-        perso.mouv("gauche")
+        char.mouv("gauche")
     if key[K_RIGHT]: # Appui sur la flèche de droite
-        perso.mouv("droite")
+        char.mouv("droite")
     if key[K_e]: #Ramasser un item
-        perso.mouv("ramasser")
+        char.mouv("ramasser")
     if key[K_F1]: #Afficher les obstacles
         if drawObstacles:
             drawObstacles = False
