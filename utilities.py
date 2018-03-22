@@ -9,11 +9,13 @@ class Item: # Définis un objet pouvant être utilisé par le joueur
                 if type == "WEAPON":
                         self.characteristics = characteristics
 
+
 class Weapon: # Classe auxiliaire pour définir les caractéristiques d'une arme
         def __init__(self, aim = 95, speed = 20, isExplosive = False):
                 self.aim = aim # La précision de tir en pourcentage. 100% correspond à une ligne droite
                 self.speed = speed # La vitesse du projectile
                 self.isExplosive = isExplosive # Définis si le projectile explose sur impact (ce qui fait des dégats plus répandus)
+
 
 class Map: # Définis une carte jouable
         def __init__(self, name, baseScreen, objectifCoords, items, spawnCoords = (0, 0)):
@@ -36,16 +38,24 @@ class Map: # Définis une carte jouable
                         for line in obstacleFile.readlines():
                                 data = line.split(',')
                                 self.mapObstacles.append(Obstacle(int(data[0]), int(data[1]), (int(data[2]), int(data[3]))))
+                self.obstaclesDrawn = False # Booléen définissant si les obstacles sont affiché ou non
 
 
-        def load(self): # Charge la map
+        def draw(self): # Charge la map
                 self.baseScreen.blit(self.background, (0, 0)) # Affiche l'image de la map
-                for k, v in self.mapItems.items(): # Itère le dictionnaire des items présents sur cette map
-                         self.baseScreen.blit(v.sprite, k) # Affiche l'image de l'items aux coordonées définies
 
         def mod(self, backgroundNumber): # Met à jour l'image de la map sans avoir a créer une nouvelle instance de cette classe
                 self.background = pygame.image.load("Resources/Maps/Sprites/" + self.backgroundPath + str(backgroundNumber) + ".png")
                 self.baseScreen.blit(self.background, (0, 0))
+
+        def drawObstacles(self):
+                for obstacle in self.mapObstacles:
+                        obstacle.draw(self.baseScreen)
+
+        def drawItems(self):
+                for k, v in self.mapItems.items(): # Itère le dictionnaire des items présents sur cette map
+                         self.baseScreen.blit(v.sprite, k) # Affiche l'image de l'items aux coordonées définies
+
 
 class Perso:
         def __init__(self, name, fenetre, speed, maxItems, map, maxHealth):
@@ -62,7 +72,7 @@ class Perso:
                 self.maxhealth = maxHealth # Points de vie maximum que le perso peut avoir
                 self.ammo = 25 # Le perso a 25 munitions au départ de la partie
 
-        def load(self):
+        def draw(self):
                 self.fenetre.blit(self.image, self.rect) # Affiche l'image du personnage au niveau du point de spawn
 
         def mouv(self,action): 
@@ -100,24 +110,23 @@ class Perso:
                                                 del self.map.mapItems[k] # Enlève l'item de la map
                                                 break # Sort de la boucle, sinon crash car dictionnaire modifié
 
+
 class Bullet :
          def __init__(self, x, y, map, perso, screen):
              realMouseCoords = pygame.mouse.get_pos()
              screenPos = (perso.rect.x - (screen.width)/2, perso.rect.y - (screen.height)/2)
              screenMouseCoords = realMouseCoords + screenPos
-             self.direction =
+             #self.direction =
              self.rect = rect(x, y, 1, 1)
              while not self.rect.collidelist(map.mapObstacles) and not self.rect.colliderect(perso.rect):
                     pygame.self.rect.move(self.rect.x + dircetion[0], self.rect.y + direction[1])
 
-        
-
 
 class Obstacle:
-        def __init__(self, length, width, coords = (0,0)) :
+        def __init__(self, length, width, coords = (0,0)):
                 self.rect = pygame.Rect(coords[0],coords[1], width, length)
 
-        def load(self, screen):
+        def draw(self, screen):
                 pygame.draw.rect(screen, pygame.Color(255, 255, 255, 100), self.rect)
 
 
