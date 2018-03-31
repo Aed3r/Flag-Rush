@@ -138,14 +138,16 @@ class Perso:
 
 
 class Bullet :
-         def __init__(self, x, y, map, perso, screen):
-             realMouseCoords = pygame.mouse.get_pos()
-             screenPos = (perso.rect.x - (screen.width)/2, perso.rect.y - (screen.height)/2)
-             screenMouseCoords = realMouseCoords + screenPos
-             #self.direction =
-             self.rect = rect(x, y, 1, 1)
-             while not self.rect.collidelist(map.mapObstacles) and not self.rect.colliderect(perso.rect):
-                    pygame.self.rect.move(self.rect.x + dircetion[0], self.rect.y + direction[1])
+         def __init__(self, map, perso, screen, screenRect):
+             screenMouseCoords = pygame.mouse.get_pos() #on obtient les coordonées de la souris
+
+             realMouseCoords = screenMouseCoords + screenRect.topleft #on obtient les coordonnées réelles du curseur (pas dans le repère de la map)
+             bulletSpeed = perso.items[0].characteristics.speed   #on défini un coefficient de vitesse pour la balle
+             direction = ((realMouseCoords.x - perso.rect.center.x, realMouseCoords.y)*bulletSpeed - (perso.rect.center.y)*bulletSpeed) #on défini des composantes de direction pour la balle
+             self.rect = rect(perso.center,(1, 1))   #on défini le rectangle lié à la balle
+             while not self.rect.collidelist(map.mapObstacles):    #on vérifie que la balle ne collisionne pas d'obstacles
+
+                    pygame.self.rect.move(self.rect.x + direction[0], self.rect.y + direction[1])  #on donne la trajectoire à la balle
 
 
 class Obstacle:
