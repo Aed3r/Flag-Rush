@@ -23,28 +23,39 @@ class Weapon: # Classe auxiliaire pour définir les caractéristiques d'une arme
 
 
 class Map: # Définis une carte jouable
-        def __init__(self, name, screen, objectifCoords, items, spawnCoords = (0, 0)):
+        def __init__(self, name, screen, objectifCoords, items, obstacles, spawnCoords = (0, 0)):
                 self.name = name
                 self.screen = screen # La fenètre principale
                 self.background = pygame.image.load("Resources/Maps/Sprites/" + self.name + ".png").convert() # Charge l'image de fond d'écran
                 self.size = self.background.get_size() # Définis la taille de la map à partir de l'image de fond d'écran
                 self.spawnCoords = spawnCoords # Où le joueur apparait en début de partie
                 self.objectifCoords = objectifCoords # Où se trouve l'objectif à atteindre
-                self.mapItems = [] # Dictionnaire de tous les items de la map. Clés: coordonnées de l'objet, Valeur: instance de le classe Item définissant l'objet en question
-                with open("Resources/Maps/Items/" + self.name + ".txt") as mapItemsFile: # Récupère et assigne les items pour cette map
-                        for line in mapItemsFile.readlines():
+                self.items = [] # Dictionnaire de tous les items de la map. Clés: coordonnées de l'objet, Valeur: instance de le classe Item définissant l'objet en question
+                with open("Resources/Maps/Items/" + self.name + ".txt") as itemsFile: # Récupère et assigne les items pour cette map
+                        for line in itemsFile.readlines():
                                 data = line.strip().split(',')
                                 for item in items: # Retrouve l'items grâce au nom
                                         if item.name == data[0]:
                                                 temp = copy.copy(item) # Recrée l'item dans une nouvelle variable afin de pouvoir le modifier sans modifier l'original
                                                 temp.rect = temp.rect.move(int(data[1]), int(data[2])) # Change les coordonnées de la copie de l'item aux coordonnées définies
-                                                self.mapItems.append(temp)
+                                                self.items.append(temp)
                                                 break
-                self.mapObstacles = [] # Récupère les obstacles de cette map
-                with open("Resources/Maps/Obstacles/" + self.name + ".txt") as obstacleFile:
-                        for line in obstacleFile.readlines():
+                self.hitboxes = [] # Récupère les hitbox de cette map
+                with open("Resources/Maps/Hitboxes/" + self.name + ".txt") as hitboxFile:
+                        for line in hitboxFile.readlines():
                                 data = line.split(',')
-                                self.mapObstacles.append(Obstacle(int(data[0]), int(data[1]), (int(data[2]), int(data[3]))))
+                                self.hitboxes.append(Hitbox((int(data[0]), int(data[1])), (int(data[2]), int(data[3]))))
+                self.obstacles = [] # Récupère les obstacles de cette map
+                with open("Resources/Maps/Obstacles/" + self.name + ".txt") as obstaclesFile: # Récupère les obstacles pour cette map
+                        for line in obstaclesFile.readlines():
+                                data = line.strip().split(',')
+                                for obstacle in obstacles: # Retrouve l'obstacle grâce au nom
+                                        if obstacle.name == data[0]:
+                                                temp = copy.copy(obstacle) # Recrée l'obstacle dans une nouvelle variable afin de pouvoir le modifier sans modifier l'original
+                                                temp.rect = temp.rect.move(int(data[1]), int(data[2])) # Change les coordonnées de la copie de l'obstacle aux coordonnées définies
+                                                self.obstacles.append(temp)
+                                                self.hitboxes.append(Hitbox((temp.hitbox.rect.left + temp.rect.left, temp.hitbox.rect.top + temp.rect.top), temp.hitbox.rect.size)) # Ajoute aux hitbox de la map celle correspondant à cette obstacle. Les coordonnées sont définie par la hitbox au sein de l'obstacle et par l'emplacement de l'obstacle
+                                                break
 
 
         def draw(self, screenRect, widthSmaller, heightSmaller): # Charge la map
@@ -70,11 +81,14 @@ class Map: # Définis une carte jouable
                                 if screenRect.colliderect(obj.rect): # Sélectionne tout les objets en collision avec le rectangle de l'écran, c'est à dire ceux qui devont être affiché
                                         obj.draw((obj.rect.x - screenRect.x, obj.rect.y - screenRect.y), self.screen) # Place les objets à déssiner sur leurs emplacements écran
                         
-        def drawObstacles(self, screenRect): # Pour déssiner les obstacles
-                self.drawObjects(self.mapObstacles, screenRect)
+        def drawHitboxes(self, screenRect): # Pour déssiner les hitbox
+                self.drawObjects(self.hitboxes, screenRect)
 
         def drawItems(self, screenRect): # Pour déssiner les items
-                self.drawObjects(self.mapItems, screenRect)
+                self.drawObjects(self.items, screenRect)
+
+        def drawObstacles(self, screenRect): # Pour déssiner les obstacles
+                self.drawObjects(self.obstacles, screenRect)
 
 
 class Perso:
@@ -105,23 +119,23 @@ class Perso:
         def mouv(self, action): 
             if action == "haut": 
                 self.rect = self.rect.move(0, -self.speed) # déplace le perso vers le haut 
-                if self.rect.collidelist(self.map.mapObstacles) != -1 or self.rect.y < 0: # si le perso se trouve sur un obstacle
+                if self.rect.collidelist(self.map.hitboxes) != -1 or self.rect.y < 0: # si le perso se trouve sur un hitbox
                     self.rect = self.rect.move(0, self.speed) # Ramène le perso à la position précédente
             if action == "bas":
                 self.rect=self.rect.move(0, self.speed) # déplace le perso vers le bas
-                if self.rect.collidelist(self.map.mapObstacles) != -1 or self.rect.bottom > self.map.size[1]:
+                if self.rect.collidelist(self.map.hitboxes) != -1 or self.rect.bottom > self.map.size[1]:
                     self.rect = self.rect.move(0, -self.speed)
             if action == "gauche":
                 self.rect = self.rect.move(-self.speed, 0) # déplace le perso vers la gauche
-                if self.rect.collidelist(self.map.mapObstacles) != -1 or self.rect.x < 0:
+                if self.rect.collidelist(self.map.hitboxes) != -1 or self.rect.x < 0:
                     self.rect = self.rect.move(self.speed, 0)
             if action == "droite":
                 self.rect = self.rect.move(self.speed, 0) # déplace le perso vers la droite
-                if self.rect.collidelist(self.map.mapObstacles) != -1 or self.rect.right > self.map.size[0]:
+                if self.rect.collidelist(self.map.hitboxes) != -1 or self.rect.right > self.map.size[0]:
                     self.rect=self.rect.move(-self.speed, 0)
             if action=="ramasser": 
                 if len(self.items) <= self.maxItems: # Vérifie que le perso a encore de la place dans son inventaire
-                                for item in self.map.mapItems: # Cherche dans la liste d'items de cette map
+                                for item in self.map.items: # Cherche dans la liste d'items de cette map
                                         if self.rect.colliderect(item.rect): # Vérifie si le perso se trouve sur un item
                                                 if item.type == "HEALTH": #verifie que l'item est du type santé
                                                         if self.health < self.maxhealth : #vérifie que le perso n'est pas au max de sa vie
@@ -133,7 +147,7 @@ class Perso:
                                                 elif item.type == "WEAPON":
                                                     self.items.append(item) # Ajoute l'item à l'inventaire du perso
 
-                                                self.map.mapItems.remove(item) # Enlève l'item de la map
+                                                self.map.items.remove(item) # Enlève l'item de la map
                                                 break # Sort de la boucle
 
 
@@ -145,19 +159,35 @@ class Bullet :
              bulletSpeed = perso.items[0].characteristics.speed   #on défini un coefficient de vitesse pour la balle
              direction = ((realMouseCoords.x - perso.rect.center.x, realMouseCoords.y)*bulletSpeed - (perso.rect.center.y)*bulletSpeed) #on défini des composantes de direction pour la balle
              self.rect = rect(perso.center,(1, 1))   #on défini le rectangle lié à la balle
-             while not self.rect.collidelist(map.mapObstacles):    #on vérifie que la balle ne collisionne pas d'obstacles
+             while not self.rect.collidelist(map.hitboxes):    #on vérifie que la balle ne collisionne pas d'hitboxes
 
                     pygame.self.rect.move(self.rect.x + direction[0], self.rect.y + direction[1])  #on donne la trajectoire à la balle
 
 
-class Obstacle:
-        def __init__(self, width, length, coords):
-                self.rect = pygame.Rect(coords[0],coords[1], width, length)
+class Hitbox:
+        def __init__(self, coords, size):
+                self.rect = pygame.Rect(coords, size)
 
         def draw(self, coords, screen):
                 pygame.draw.rect(screen, pygame.Color(191, 63, 63), pygame.Rect(coords[0], coords[1], self.rect.w, self.rect.h))
 
 
+class Obstacle: # Définis des obstacles en perspective et qui présente une hitbox
+        def __init__(self, name, hitbox):
+                self.name = name
+                self.lowerSprite = pygame.image.load("Resources/Obstacles/Sprites/" + name + "Lower.png").convert_alpha() # La partie basse de l'objet qui doit toujours se trouver derrière le joueur
+                self.upperSprite = pygame.image.load("Resources/Obstacles/Sprites/" + name + "Upper.png").convert_alpha() # La partie haute de l'objet qui doit toujours se trouver devant le joueur
+                self.rect = self.lowerSprite.get_rect()
+                self.hitbox = hitbox # La hitbox associé à l'objet
+                self.lowerDrawn = False # Booléen définissant quelle partie de l'objet doit être dessiné. False: partie basse, True: partie haute
+        
+        def draw(self, coords, screen): # Dessine l'objet en deux parties s'alternant. La partie basse est toujours dessiné avant la partie haute
+                if self.lowerDrawn: # Dessiner la partie haute
+                        screen.blit(self.upperSprite, coords)
+                        self.lowerDrawn = False
+                else: # Dessiner la partie basse
+                        screen.blit(self.lowerSprite, coords)
+                        self.lowerDrawn = True
 
 
 

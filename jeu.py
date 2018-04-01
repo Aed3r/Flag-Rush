@@ -20,7 +20,7 @@ screen.set_alpha(None) # Enlève la couche alpha de l'écran afin d'améliorer l
 #endregion
 
 
-#region resources loading functions
+#region assets loading functions
 def loadItems(): # Charge les types d'items dans une liste
     tempItems = [] # Liste temporaire des items
     with open("Resources/Items/Data.txt") as itemsFile: 
@@ -33,12 +33,21 @@ def loadItems(): # Charge les types d'items dans une liste
     return tempItems
 
 
+def loadObstacles(): # Charge les obstacles dans une liste
+    tempObstacles = [] # Liste temporaire des obstacles
+    with open("Resources/Obstacles/Data.txt") as obstaclesFile:
+        for line in obstaclesFile.readlines():
+            data = line.split(',')
+            tempObstacles.append(ut.Obstacle(data[0], ut.Hitbox((int(data[1]), int(data[2])), (int(data[3]), int(data[4])))))
+    return tempObstacles
+
+
 def loadMaps(): # Charge les maps dans une liste
     tempMaps = [] # Liste temporaire des maps
     with open("Resources/Maps/Data.txt") as mapsFile:
         for line in mapsFile.readlines():
             data = line.split(',')
-            tempMaps.append(ut.Map(data[0], screen, (int(data[1]), int(data[2])), items, (int(data[3]), int(data[4]))))
+            tempMaps.append(ut.Map(data[0], screen, (int(data[1]), int(data[2])), items, obstacles, (int(data[3]), int(data[4]))))
     return tempMaps
 
 
@@ -53,7 +62,7 @@ def loadCharacters(): # Charge les différents charactères dans une liste
 
 
 #region drawing and reacting
-drawObstacles = False # Booléen définissant si les obstacles sont affiché ou non
+drawHitboxes = False # Booléen définissant si les hitbox sont affiché ou non
 def draw(): # Retrace tout les éléments du jeu. Ordre important
     if widthSmaller: # Lorsque la largeur de la map est plus petite que la largeur de l'écran
         chosenX = map.size[0] / 2 - screenSize[0] / 2 # L'emplacement X du rectangle écran définit par rapport à la map pour que celle-ci soit centré
@@ -80,16 +89,18 @@ def draw(): # Retrace tout les éléments du jeu. Ordre important
             screenRect.y = map.size[1] - screenRect.height
 
     map.draw(screenRect, widthSmaller, heightSmaller) # Dessine la map
+    map.drawObstacles(screenRect) # Dessine les obstacles tel que des bâtiments. Le premier appel dessine la partie basse des obstacles coorespondant à la hitbox
     map.drawItems(screenRect) # Dessine les items
     char.draw(screenRect) # dessine le perso à ses nouvelles coordonnées
-    if drawObstacles:
-        map.drawObstacles(screenRect) # Déssine les obstacles de la map si ils ne sont pas déjà affichés
+    map.drawObstacles(screenRect) # Le deuxième appel dessine la partie haute des obstacles. Les deux appels simule la perspective
+    if drawHitboxes:
+        map.drawHitboxes(screenRect) # Déssine les hitbox de la map si ils ne sont pas déjà affichés
     pygame.display.flip() # Rafraichi le jeu
 
 
 f1Pressed = False # Booléen définissant si la touche F1 est appuyé ou non
 def react():
-    global drawObstacles
+    global drawHitboxes
     global f1Pressed
 
     key=pygame.key.get_pressed() # liste les appui sur le clavier
@@ -103,11 +114,11 @@ def react():
         char.mouv("droite")
     if key[K_e]: #Ramasser un item
         char.mouv("ramasser")
-    if key[K_F1]: #Afficher les obstacles
-        if not drawObstacles and not f1Pressed: # Les obstacles ne sont jusque là pas affichés et l'utilisateur n'a auparavant pas appuyé sur F1
-            drawObstacles = True # Afficher les obstacles
-        elif drawObstacles and not f1Pressed: # Les obstacles sont affichés et l'utilisateur n'a auparavant pas appuyé sur F1
-            drawObstacles = False # Ne plus afficher les obstacles
+    if key[K_F1]: #Afficher les hitbox
+        if not drawHitboxes and not f1Pressed: # Les hitbox ne sont jusque là pas affichés et l'utilisateur n'a auparavant pas appuyé sur F1
+            drawHitboxes = True # Afficher les hitbox
+        elif drawHitboxes and not f1Pressed: # Les hitbox sont affichés et l'utilisateur n'a auparavant pas appuyé sur F1
+            drawHitboxes = False # Ne plus afficher les hitbox
         f1Pressed = True
     else:
         f1Pressed = False
@@ -116,6 +127,7 @@ def react():
 
 #region resources setup
 items = loadItems()
+obstacles = loadObstacles()
 maps = loadMaps()
 map = maps[1] # Map choisie par l'utilisateur
 
