@@ -4,8 +4,18 @@ import utilities as ut
 import os
 
 pygame.init()
-screenSize = width, height = 1000, 1000
+screenSize = width, height = 800, 600
 screen = pygame.display.set_mode(screenSize)
+
+fondMenu=pygame.image.load("Resources/Menus/BackgroundMenuDépart.png")
+screen.blit(fondMenu,(0,0))
+boutonJouer=pygame.image.load("Resources/Menus/BoutonJouer.png").convert()
+screen.blit(boutonJouer,(272,100))
+pygame.display.flip()
+
+
+
+
 
 items = []
 with open("Resources/Items/Data.txt") as itemsFile: # Charge les types d'items dans une liste
@@ -62,12 +72,15 @@ def react():
 
 notDone=True
 while notDone: # Tant que done est égal à True : 
-    draw() # Tout retracé
-    react() # Vérifier les coordonnées
-
     for event in pygame.event.get(): #vérifie tous les événements possibles
         if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE): # si l'événement est un quitter ou l'utilisateur utilise échap
             notDone = False # sort de la boucle
+        if event.type==MOUSEBUTTONDOWN and event.button==1:
+            if event.pos[0]<528 and event.pos[0]>272 and event.pos[1]<200 and event.pos[1]>100:
+                draw() # Tout retracé
+                react() #Vérifier les coordonnées
+                
+
 
 pygame.quit() # quitte pygame
 
