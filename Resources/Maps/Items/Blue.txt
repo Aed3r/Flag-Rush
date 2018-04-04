@@ -1,0 +1,6 @@
+Pistol,200,100
+HealthPack,300,100
+Ammo,400,100
+AK47,100,200
+HealthPack,100,300
+Ammo,100,400
