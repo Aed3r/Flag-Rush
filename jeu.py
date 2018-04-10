@@ -12,7 +12,7 @@ from ctypes import *
 
 #region screen and pygame setup
 pygame.init() # Initialise PyGame
-pygame.event.set_allowed([QUIT, KEYUP]) # Limite la détection de touches
+pygame.event.set_allowed([QUIT, KEYUP, MOUSEBUTTONDOWN]) # Limite la détection de touches
 ctypes.windll.user32.SetProcessDPIAware() # Enlève le redimensionnement de l'image sous Windows (https://gamedev.stackexchange.com/a/105820)
 screenSize = (windll.user32.GetSystemMetrics(0),windll.user32.GetSystemMetrics(1)) # Récupère la résolution a utilisé ensuite 
 screen = pygame.display.set_mode(screenSize, FULLSCREEN | DOUBLEBUF) # Crée la surface écran avec la résolution indiquée, en plein écran et avec une performance doublé
@@ -60,15 +60,19 @@ def loadCharacters(): # Charge les différents charactères dans une liste
     return tempCharacters
 #endregion
 
-pygame.init()
-screenSize = width, height = 800, 600
-screen = pygame.display.set_mode(screenSize)
+def menuDepart():
+    fondMenu=pygame.image.load("Resources/Menus/BackgroundMenuDépart.png")
+    fondMenu=pygame.transform.scale(fondMenu,screenSize)
+    screen.blit(fondMenu,(0,0))
+    boutonJouer=ut.Bouton((750,200),"Jouer",(200,100),screen)
+    boutonJouer.draw()
+    boutonQuitter=ut.Bouton((750,500),"Quitter",(200,100),screen)
+    boutonQuitter.draw()
+    boutonOptions=ut.Bouton((750,500),"Options",(200,100),screen)
+    boutonOptions.draw()
+    pygame.display.flip()
 
-fondMenu=pygame.image.load("Resources/Menus/BackgroundMenuDépart.png")
-screen.blit(fondMenu,(0,0))
-boutonJouer=pygame.image.load("Resources/Menus/BoutonJouer.png").convert()
-screen.blit(boutonJouer,(272,100))
-pygame.display.flip()
+
 
 
 #region drawing and reacting
@@ -154,23 +158,30 @@ char = characters[0] # Perso choisi par l'utilisateur
 
 
 #region main loop
-notDone = True # Vrai tant que l'utilisateur souhaite jouer
-while notDone: # Tant que done est égal à True : 
-    startTime = time.time() # temps de début de la boucle en s
-    draw() # Tout retracé
-    react() # Vérifier les coordonnées
-    for event in pygame.event.get(): #vérifie tous les événements possibles
-        if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE): # si l'événement est un quitter ou l'utilisateur utilise échap
-            notDone = False # sort de la boucle
-        if event.type==MOUSEBUTTONDOWN and event.button==1:
-            if event.pos[0]<528 and event.pos[0]>272 and event.pos[1]<200 and event.pos[1]>100:
-                draw() # Tout retracé
-                react() #Vérifier les coordonnées
+def jeu():
+    global notDone  
+    notDone = True # Vrai tant que l'utilisateur souhaite jouer
+    while notDone: # Tant que done est égal à True : 
+        startTime = time.time() # temps de début de la boucle en s
+        draw() # Tout retracé
+        react() # Vérifier les coordonnées
+        for event in pygame.event.get(): #vérifie tous les événements possibles
+            if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE): # si l'événement est un quitter ou l'utilisateur utilise échap
+                notDone = False # sort de la boucle
                 
+        pygame.time.Clock().tick_busy_loop(120) # Limite les FPS au maximum indiqué
+        print("FPS: ", round(1.0 / (time.time() - startTime), 2)) # FPS = 1 / temps de la boucle
 
+menuDepart()
+notDone=True
+while notDone:
+    for event in pygame.event.get():
+        if event.type==MOUSEBUTTONDOWN and event.button==1:
+            jeu()
+            notDone=False
+        elif event.type==MOUSEBUTTONDOWN and event.button==3:
+            notDone=False
 
-    pygame.time.Clock().tick_busy_loop(60) # Limite les FPS au maximum indiqué
-    print("FPS: ", round(1.0 / (time.time() - startTime), 2)) # FPS = 1 / temps de la boucle
 #endregion
 
 pygame.quit() # quitte pygame

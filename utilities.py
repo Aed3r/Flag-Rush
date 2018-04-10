@@ -167,8 +167,7 @@ class Bullet :
 class Hitbox:
         def __init__(self, coords, size):
                 self.rect = pygame.Rect(coords, size)
-
-        def draw(self, coords, screen):
+        def draw(self,coords,screen):
                 pygame.draw.rect(screen, pygame.Color(191, 63, 63), pygame.Rect(coords[0], coords[1], self.rect.w, self.rect.h))
 
 
@@ -188,6 +187,17 @@ class Obstacle: # Définis des obstacles en perspective et qui présente une hit
                 else: # Dessiner la partie basse
                         screen.blit(self.lowerSprite, coords)
                         self.lowerDrawn = True
+
+class Bouton:
+        def __init__(self,coords,text,size,screen):
+                self.rect=pygame.Rect(coords,size)
+                self.coords=coords
+                self.size=size
+                self.screen=screen
+                self.text=text
+        def draw(self):
+                pygame.draw.rect(self.screen,pygame.Color(255,255,255), pygame.Rect(self.coords[0], self.coords[1], self.rect.size[0],self.rect.size[1]))
+                
 
 
 
