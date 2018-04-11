@@ -196,8 +196,10 @@ class Bouton:
                 self.screen=screen
                 self.text=text
         def draw(self):
-                pygame.draw.rect(self.screen,pygame.Color(255,255,255), pygame.Rect(self.coords[0], self.coords[1], self.rect.size[0],self.rect.size[1]))
-                
+                pygame.draw.rect(self.screen,pygame.Color(255,0,0), pygame.Rect(self.coords[0], self.coords[1], self.rect.size[0],self.rect.size[1]))
+                font=pygame.font.SysFont("Times New Roman",50,bold=False,italic=False) 
+                texte=font.render(self.text,1,(0,0,0))
+                self.screen.blit(texte,(self.coords[0]+30,self.coords[1]+30))
 
 
 

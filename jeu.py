@@ -60,20 +60,6 @@ def loadCharacters(): # Charge les différents charactères dans une liste
     return tempCharacters
 #endregion
 
-def menuDepart():
-    fondMenu=pygame.image.load("Resources/Menus/BackgroundMenuDépart.png")
-    fondMenu=pygame.transform.scale(fondMenu,screenSize)
-    screen.blit(fondMenu,(0,0))
-    boutonJouer=ut.Bouton((750,200),"Jouer",(200,100),screen)
-    boutonJouer.draw()
-    boutonQuitter=ut.Bouton((750,500),"Quitter",(200,100),screen)
-    boutonQuitter.draw()
-    boutonOptions=ut.Bouton((750,500),"Options",(200,100),screen)
-    boutonOptions.draw()
-    pygame.display.flip()
-
-
-
 
 #region drawing and reacting
 drawHitboxes = False # Booléen définissant si les hitbox sont affiché ou non
@@ -157,7 +143,20 @@ char = characters[0] # Perso choisi par l'utilisateur
 #endregion
 
 
-#region main loop
+#region menu and game fonctions
+
+def menuDepart():
+    fondMenu=pygame.image.load("Resources/Menus/BackgroundMenuDépart.png")
+    fondMenu=pygame.transform.scale(fondMenu,screenSize)
+    screen.blit(fondMenu,(0,0))
+    boutonJouer=ut.Bouton((750,200),"Jouer",(200,100),screen)
+    boutonJouer.draw()
+    boutonQuitter=ut.Bouton((750,500),"Quitter",(200,100),screen)
+    boutonQuitter.draw()
+    boutonOptions=ut.Bouton((750,800),"Options",(200,100),screen)
+    boutonOptions.draw()
+    pygame.display.flip()
+
 def jeu():
     global notDone  
     notDone = True # Vrai tant que l'utilisateur souhaite jouer
@@ -171,6 +170,11 @@ def jeu():
                 
         pygame.time.Clock().tick_busy_loop(120) # Limite les FPS au maximum indiqué
         print("FPS: ", round(1.0 / (time.time() - startTime), 2)) # FPS = 1 / temps de la boucle
+
+#endregion
+
+
+#region main loop
 
 menuDepart()
 notDone=True
