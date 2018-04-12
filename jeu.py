@@ -145,6 +145,10 @@ char = characters[0] # Perso choisi par l'utilisateur
 
 #region menu and game fonctions
 
+
+
+
+
 def menuDepart():
     fondMenu=pygame.image.load("Resources/Menus/BackgroundMenuDépart.png")
     fondMenu=pygame.transform.scale(fondMenu,screenSize)
@@ -156,6 +160,15 @@ def menuDepart():
     boutonOptions=ut.Bouton((750,800),"Options",(200,100),screen)
     boutonOptions.draw()
     pygame.display.flip()
+    notDone=True
+    while notDone:
+        for event in pygame.event.get():
+            if event.type==MOUSEBUTTONDOWN and event.button==1:
+                if boutonJouer.rect.collidepoint(event.pos[0],event.pos[1]):
+                    jeu()
+                    notDone=False
+                if boutonQuitter.rect.collidepoint(event.pos[0],event.pos[1]):
+                    notDone=False
 
 def jeu():
     global notDone  
@@ -167,6 +180,8 @@ def jeu():
         for event in pygame.event.get(): #vérifie tous les événements possibles
             if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE): # si l'événement est un quitter ou l'utilisateur utilise échap
                 notDone = False # sort de la boucle
+            if event.type ==MOUSEBUTTONDOWN and event.button==3:
+                menuDepart()
                 
         pygame.time.Clock().tick_busy_loop(120) # Limite les FPS au maximum indiqué
         print("FPS: ", round(1.0 / (time.time() - startTime), 2)) # FPS = 1 / temps de la boucle
@@ -177,14 +192,7 @@ def jeu():
 #region main loop
 
 menuDepart()
-notDone=True
-while notDone:
-    for event in pygame.event.get():
-        if event.type==MOUSEBUTTONDOWN and event.button==1:
-            jeu()
-            notDone=False
-        elif event.type==MOUSEBUTTONDOWN and event.button==3:
-            notDone=False
+
 
 #endregion
 
