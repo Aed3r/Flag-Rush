@@ -10,9 +10,9 @@ from ctypes import *
 #endregion
 
 
-#region screen and pg setup
+#region screen and pygame setup
 pg.init() # Initialise pg
-pg.event.set_allowed([QUIT, KEYUP]) # Limite la détection de touches
+pg.event.set_allowed([QUIT, KEYUP, MOUSEBUTTONDOWN]) # Limite la détection de touches
 ctypes.windll.user32.SetProcessDPIAware() # Enlève le redimensionnement de l'image sous Windows (https://gamedev.stackexchange.com/a/105820)
 screenSize = (windll.user32.GetSystemMetrics(0),windll.user32.GetSystemMetrics(1)) # Récupère la résolution a utilisé ensuite 
 screen = pg.display.set_mode(screenSize, DOUBLEBUF | FULLSCREEN) # Crée la surface écran avec la résolution indiquée, en plein écran et avec une performance doublé
@@ -159,19 +159,46 @@ if map.size[1] < screenSize[1]:
 #endregion
 
 
-#region main loop
-notDone = True # Vrai tant que l'utilisateur souhaite jouer
-while notDone: # Tant que done est égal à True : 
-    startTime = time.time() # temps de début de la boucle en s
-    draw() # Tout retracé
-    react() # Vérifier les coordonnées
-    for event in pg.event.get(): #vérifie tous les événements possibles
-        if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE): # si l'événement est un quitter ou l'utilisateur utilise échap
-            notDone = False # sort de la boucle
+#region menu and game fonctions
+def menuDepart():
+    fondMenu=pg.image.load("Resources/Menus/BackgroundMenuDépart.png")
+    fondMenu=pg.transform.scale(fondMenu,screenSize)
+    screen.blit(fondMenu,(0,0))
+    boutonJouer=ut.Bouton((750,200),"Jouer",(200,100),screen)
+    boutonJouer.draw()
+    boutonQuitter=ut.Bouton((750,500),"Quitter",(200,100),screen)
+    boutonQuitter.draw()
+    boutonOptions=ut.Bouton((750,800),"Options",(200,100),screen)
+    boutonOptions.draw()
+    pg.display.flip()
+    notDone=True
+    while notDone:
+        for event in pg.event.get():
+            if event.type==MOUSEBUTTONDOWN and event.button==1:
+                if boutonJouer.rect.collidepoint(event.pos[0],event.pos[1]):
+                    jeu()
+                    notDone=False
+                if boutonQuitter.rect.collidepoint(event.pos[0],event.pos[1]):
+                    notDone=False
 
-    pg.time.Clock().tick_busy_loop(120) # Limite les FPS au maximum indiqué
-    print("FPS: ", round(1.0 / (time.time() - startTime), 2)) # FPS = 1 / temps de la boucle
+def jeu():
+    global notDone  
+    notDone = True # Vrai tant que l'utilisateur souhaite jouer
+    while notDone: # Tant que done est égal à True : 
+        startTime = time.time() # temps de début de la boucle en s
+        draw() # Tout retracé
+        react() # Vérifier les coordonnées
+        for event in pg.event.get(): #vérifie tous les événements possibles
+            if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE): # si l'événement est un quitter ou l'utilisateur utilise échap
+                notDone = False # sort de la boucle
+            if event.type ==MOUSEBUTTONDOWN and event.button==3:
+                menuDepart()
+                
+        pg.time.Clock().tick_busy_loop(120) # Limite les FPS au maximum indiqué
+        print("FPS: ", round(1.0 / (time.time() - startTime), 2)) # FPS = 1 / temps de la boucle
 #endregion
+
+menuDepart()
 
 pg.quit() # quitte pygame
 

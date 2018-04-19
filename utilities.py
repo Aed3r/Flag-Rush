@@ -430,8 +430,22 @@ class Bullet :
              direction = ((realMouseCoords.x - perso.rect.center.x, realMouseCoords.y)*bulletSpeed - (perso.rect.center.y)*bulletSpeed) #on défini des composantes de direction pour la balle
              self.rect = rect(perso.center,(1, 1))   #on défini le rectangle lié à la balle
              while not self.rect.collidelist(map.hitboxes):    #on vérifie que la balle ne collisionne pas d'hitboxes
-
                     pygame.self.rect.move_ip(direction[0], direction[1])  #on donne la trajectoire à la balle
+
+
+class Bouton:
+        def __init__(self,coords,text,size,screen):
+                self.rect=pygame.Rect(coords,size)
+                self.coords=coords
+                self.size=size
+                self.screen=screen
+                self.text=text
+                
+        def draw(self):
+                pygame.draw.rect(self.screen,pygame.Color(255,0,0), pygame.Rect(self.coords[0], self.coords[1], self.rect.size[0],self.rect.size[1]))
+                font=pygame.font.SysFont("Times New Roman",50,bold=False,italic=False) 
+                texte=font.render(self.text,1,(0,0,0))
+                self.screen.blit(texte,(self.coords[0]+30,self.coords[1]+30))
 
 
 
