@@ -308,57 +308,57 @@ class PathFinder: # Classe permettant de trouver le chemin le plus rapide entre 
         def __addNeighbourNodes(self, node): # Ajoute 8 nodes à la liste de nodes autour du node précisé si ils n'existent pas déjà et ne se trouvent pas sur des hitboxes
                 # Vérifie que le node à la droite n'existe pas déja
                 nextNodeCoords = (node.rect.x + node.rect.width, node.rect.y) # Position du prochain node 
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))):
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
                         # Ajoute le node de droite si elle n'existe pas déja
                         self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
-
+                        
                 # Vérifie que le node à la gauche n'existe pas déja
                 nextNodeCoords = (node.rect.x - node.rect.width, node.rect.y) # Position du prochain node 
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))):
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
                         # Ajoute le node de gauche si elle n'existe pas déja
                         self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
                 # Vérifie que le node au dessus n'existe pas déja
                 nextNodeCoords = (node.rect.x, node.rect.y - node.rect.width) # Position du prochain node 
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))):
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
                         # Ajoute le node au dessus si elle n'existe pas déja
                         self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
                 # Vérifie que le node en dessous n'existe pas déja
                 nextNodeCoords = (node.rect.x, node.rect.y + node.rect.width) # Position du prochain node 
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))):
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
                         # Ajoute le node en dessous si elle n'existe pas déja
                         self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
                 # Vérifie que le node à la droite en haut n'existe pas déja
                 nextNodeCoords = (node.rect.x + node.rect.width, node.rect.y - node.rect.width) # Position du prochain node 
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))):
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
                         # Ajoute le node à la droite en haut si elle n'existe pas déja
                         self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
                 # Vérifie que le node à la droite en bas n'existe pas déja
                 nextNodeCoords = (node.rect.x + node.rect.width, node.rect.y + node.rect.width) # Position du prochain node 
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))):
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
                         # Ajoute le node à la droite en bas si elle n'existe pas déja
                         self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
                 # Vérifie que le node à la gauche en haut n'existe pas déja
                 nextNodeCoords = (node.rect.x - node.rect.width, node.rect.y - node.rect.width) # Position du prochain node 
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))):
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
                         # Ajoute le node à la gauche en haut si elle n'existe pas déja
                         self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
                 # Vérifie que le node à la gauche en bas n'existe pas déja
                 nextNodeCoords = (node.rect.x - node.rect.width, node.rect.y + node.rect.width) # Position du prochain node 
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))):
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
                         # Ajoute le node à la gauche en bas si elle n'existe pas déja
                         self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
                 node.state = 2 # Change l'état du node pour qu'il ne soit pas pris en compte une deuxième fois par closestNode()
 
-        def __closestNode(self): # Indique le node le plus proche du point de fin dans la liste de nodes
+        def __closestNode(self, includeChecked): # Indique le node le plus proche du point de fin dans la liste de nodes
                 smallestTLList = [] # "Smallest Total Lengths List" - liste des nodes dont la longueur totale (longueur au début + longueur à la fin) est la plus courte
-                for node in list(filter(lambda x: x.state == 1, self.nodes)): # Itère les nodes qui n'ont pas encore été les plus proche
+                for node in (list(filter(lambda x: x.state == 1, self.nodes)) if not includeChecked else self.nodes): # Itère les nodes qui n'ont pas encore été les plus proche
                         if smallestTLList: # Si un node se trouve déjà dans la liste
                                 if node.totalLength < smallestTLList[0].totalLength:
                                         smallestTLList = [node] # Si un node est plus petits que les autres nodes de la liste, il les remplace
@@ -387,9 +387,12 @@ class PathFinder: # Classe permettant de trouver le chemin le plus rapide entre 
                 self.nodes = [self.Node((self.start[0] - self.precision / 2, self.start[1] - self.precision / 2), self.precision, None, 1, self.start, finish)] # Initialise la liste de tout les nodes avec un node centré sur le point de départ
 
                 while not [x for x in self.nodes if x.rect.colliderect(pygame.Rect(self.finish[0] - self.precision / 2, self.finish[1] - self.precision / 2, self.precision, self.precision))] and not any([x for x in self.nodes if x.startLength > self.maxRadius]): # Tant qu'un node n'est pas en collision avec le rectangle centré sur le point de fin et qu'aucun node n'excède le radius maximale précisé, on continue à chercher
-                        closest = self.__closestNode() # On cherche le node le plus proche
+                        closest = self.__closestNode(False) # On cherche le node le plus proche
                         self.__addNeighbourNodes(closest) # On ajoute les nodes voisin au node le plus proche
-                current_node = self.__closestNode() # On retrace le chemin le plus court à l'envers en partant du node le plus proche du point de fin 
+                if any([x for x in self.nodes if x.startLength > self.maxRadius]): # Si un node se trouve en dehors du radius maximale
+                        current_node = self.__closestNode(True) # On retrace le chemin le plus court à l'envers (en incluant les nodes déjà vérifié) en partant du node le plus proche du point de fin 
+                else:
+                        current_node = self.__closestNode(False) # On retrace le chemin le plus court à l'envers en partant du node le plus proche du point de fin 
                 while current_node != self.nodes[0]: # Tant que l'on a pas atteint le node de départ
                         self.path.append(current_node) # On ajoute le node parent au dernier
                         current_node = current_node.parent
