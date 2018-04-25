@@ -54,7 +54,7 @@ class Obstacle: # Définis des obstacles en perspective et qui présente une hit
                 self.rect = self.lowerSprite.get_rect()
                 self.hitbox = hitbox # La hitbox associé à l'objet
                 self.lowerDrawn = False # Booléen définissant quelle partie de l'objet doit être dessiné. False: partie basse, True: partie haute
-        
+
         def draw(self, coords, screen): # Dessine l'objet en deux parties s'alternant. La partie basse est toujours dessiné avant la partie haute
                 if self.lowerDrawn: # Dessiner la partie haute
                         screen.blit(self.upperSprite, coords)
@@ -75,73 +75,79 @@ class Obstacle: # Définis des obstacles en perspective et qui présente une hit
                 return result
 
 
-class Enemy:
+class Enemy: # Définis un ennemis qui va tenter d'attaquer les joueurs s'ils se trovent suffisament proche
         def __init__(self, name, screen, map, speed, health, viewingRadius, reactionTime, weapons):
-                self.name = name
-                self.sprite = pygame.image.load("Resources/Enemies/Sprites/" + name + ".png").convert_alpha() 
-                self.rect = self.sprite.get_rect()
-                self.screen = screen
-                self.speed = speed
-                self.map = map
-                self.health = health
-                self.viewingRadius = viewingRadius
-                self.reactionTime = reactionTime
-                self.weapons = weapons
-                self.pathFinder = PathFinder(self.map.hitboxes, max(self.rect.width, self.rect.height))
-                self.lastPlayerPos = None
+                self.name = name # Le nom de l'ennemis
+                self.sprite = pygame.image.load("Resources/Enemies/Sprites/" + name + ".png").convert_alpha() # l'image de l'ennemis
+                self.rect = self.sprite.get_rect() # Le rectangle définissant la hitbox de l'ennemis
+                self.screen = screen # La surface sur laquelle l'ennemis doit être affiché
+                self.speed = speed # La vitesse de l'ennemis
+                self.map = map # La map sur laquelle se trouve l'ennemis
+                self.health = health # Les points de vie de l'ennemis
+                self.viewingRadius = viewingRadius # Le radius auxquel l'ennemis "voit" un joueurs
+                self.reactionTime = reactionTime # Le "temps de réaction" de l'ennemis. Correspond à la distance minimale parcouru par le joueur le plus proche pour que l'ennemis change sa trajectoire
+                self.weapons = weapons # Arme que l'ennemis pourrait porter
+                self.pathFinder = PathFinder(self.map.hitboxes, max(self.rect.width, self.rect.height), self.viewingRadius) # Le chercheur de chemin de l'ennemis, pour trouver le chemin le plus rapide vers les joueurs en tenant en compte les obstacles
+                self.lastPlayerPos = None # La dernière position du joueur se trouvant le plus proche de l'ennemis
+                self.idleTime = 0 # Temps d'immobilité de l'ennemis entre chaque mouvement aléatoire (tant qu'aucun joueur est proche)
 
-        def draw(self, coords, screen):
+        def draw(self, coords, screen): # Dessine l'ennemis aux bonnes coordonnées écran
                 screen.blit(self.sprite, coords)
 
-        def distanceBetween(self, pointA, pointB):
+        def distanceBetween(self, pointA, pointB): # Retourne la distance entre un point A et un point B
                 return math.sqrt(math.pow(pointA[0] - pointB[0], 2) + math.pow(pointA[1] - pointB[1], 2))
 
-        def atan2Normalized(self, y, x): # https://stackoverflow.com/a/10343477
+        def atan2Normalized(self, y, x): # Retourne l'angle d'un point par rapport à l'origine du repère (https://stackoverflow.com/a/10343477)
                 result = math.atan2(y, x)
-                if result < 0:
+                if result < 0: # Ajoute 2π à l'angle s'il est négatif 
                         result += 2 * math.pi
                 return result
 
-        def randomPath(self):
+        def randomPath(self): # Trouve un chemin aléatoire si aucun joueur se trouve à proximité de l'ennemis
                 dest = None
-                while not dest or any([x for x in self.map.hitboxes if x.rect.collidepoint(dest)]):
-                        randomAngle = random.randint(0, 360)
-                        randomDistance = random.randint(self.speed, self.viewingRadius)
-                        dest = (round(self.rect.centerx + randomDistance * math.cos(randomAngle * math.pi / 180)), round(self.rect.centery + randomDistance * math.sin(randomAngle * math.pi / 180)))
-                self.pathFinder.findBest(self.rect.center, dest)
-        
-        def moveTowards(self, coords):
-                angle = self.atan2Normalized((self.rect.centery - coords[1]), (coords[0] - self.rect.centerx))
-                coords = (self.speed * round(math.cos(angle), 5), -self.speed * round(math.sin(angle), 5))
-                self.rect.move_ip(coords[0], coords[1])
+                while not dest or any([x for x in self.map.hitboxes if x.rect.collidepoint(dest)]): # Tant que la destination ne se trouve pas dans une hitbox
+                        randomAngle = random.randint(0, 360) # Angle aléatoire
+                        randomDistance = random.randint(self.speed, self.viewingRadius / 2) # Distance aléatoire entre la vitesse de l'ennemi et le radius de visibilité divisé par 2
+                        dest = (round(self.rect.centerx + randomDistance * math.cos(randomAngle * math.pi / 180)), round(self.rect.centery + randomDistance * math.sin(randomAngle * math.pi / 180))) # Trouve la destination à l'aide de trigonométrie
+                self.pathFinder.findBest(self.rect.center, dest) # Trouve le meilleur chemin pour atteindre la destination
 
-        def move(self):
-                radiusPlayers = [x for x in self.map.players if self.distanceBetween(self.rect.center, x.rect.center) <= self.viewingRadius]
-                radiusPlayers.sort(key = lambda x: self.distanceBetween(self.rect.center, x.rect.center))
-                if any(radiusPlayers):
-                        if self.lastPlayerPos:
-                                if self.distanceBetween(self.lastPlayerPos, radiusPlayers[0].rect.center) >= self.reactionTime or self.rect.center == self.lastPlayerPos:
-                                        self.pathFinder.findBest(self.rect.center, radiusPlayers[0].rect.center)  
-                                        self.lastPlayerPos = radiusPlayers[0].rect.center
-                        else:   
-                                self.pathFinder.findBest(self.rect.center, radiusPlayers[0].rect.center)  
-                                self.lastPlayerPos = radiusPlayers[0].rect.center
-                elif (not self.pathFinder.path and self.rect.center == self.pathFinder.finish) or not self.pathFinder.finish:
-                                self.randomPath()
-               
-                if self.pathFinder.path:        
-                        if self.distanceBetween(self.rect.center, self.pathFinder.path[0].rect.center) <= self.speed:
-                                self.pathFinder.path.pop(0)
+        def moveTowards(self, coords): # Bouge les coordonnées de l'ennemis vers les coordonnées indiqué
+                angle = self.atan2Normalized((self.rect.centery - coords[1]), (coords[0] - self.rect.centerx)) # Angle de la destination par rapport au personnage dans la plan du repère
+                coords = (self.speed * round(math.cos(angle), 5), -self.speed * round(math.sin(angle), 5)) # Trouve les coefficients avec lesquels incrémenté les coordonnées de l'ennemi pour atteindre la destination à l'aide de trigonométrie
+                self.rect.move_ip(coords[0], coords[1]) # Incrémente les coordonnées de l'ennemis par le coefficient calculé auparavant
+
+        def move(self): # Trouve une destination et incrémente les coordonnées du perso vers celle-ci
+                radiusPlayers = [x for x in self.map.players if self.distanceBetween(self.rect.center, x.rect.center) <= self.viewingRadius] # Liste des joueurs se trouvant dans le radius de visibilité de l'ennemis
+                radiusPlayers.sort(key = lambda x: self.distanceBetween(self.rect.center, x.rect.center)) # Classe les joueurs du plus proche au plus éloigné
+                if any(radiusPlayers): # Si au moins un joueur se trouve dans la zone de visibilité de l'ennemis
+                        if self.lastPlayerPos: # Si ce joueur a déjà été visé auparavant
+                                if (self.distanceBetween(self.lastPlayerPos, radiusPlayers[0].rect.center) >= self.reactionTime or self.rect.center == self.lastPlayerPos) and not self.rect.center == radiusPlayers[0]: # Si le joueur a bougé plus que le temps de réaction, que l'ennemis se trouve sur la dernière position du joueur mais pas sur le joueur 
+                                        self.pathFinder.findBest(self.rect.center, radiusPlayers[0].rect.center) # Cherche le chemin le plus rapide vers le joueur
+                                        self.lastPlayerPos = radiusPlayers[0].rect.center # Met à jour la dernière position du joueur
                         else:
-                                self.moveTowards(self.pathFinder.path[0].rect.center)
-                else:
-                        if self.distanceBetween(self.rect.center, self.pathFinder.finish) <= self.speed:
-                                self.rect.center = self.pathFinder.finish
+                                self.pathFinder.findBest(self.rect.center, radiusPlayers[0].rect.center) # Cherche le chemin le plus rapide vers le joueur
+                                self.lastPlayerPos = radiusPlayers[0].rect.center # Met à jour la dernière position du joueur
+                elif (not self.pathFinder.path and self.rect.center == self.pathFinder.finish) or not self.pathFinder.finish: # Si l'ennemis n'a pas déjà une destination et un chemin
+                        if self.idleTime > 0: # Si l'ennemis doit encore attendre 
+                                self.idleTime -= 1
                         else:
-                                self.moveTowards(self.pathFinder.finish)                       
+                                self.randomPath() # Trouver un chemin aléatoire
+                                self.idleTime = random.randint(self.reactionTime, self.speed * 50) # Définis un temps d'attente aléatoire à partir de la vitesse de l'ennemis
 
 
-class Map: # Définis une carte jouable 
+                if self.pathFinder.path: # Si l'ennemis a un chemin 
+                        if self.distanceBetween(self.rect.center, self.pathFinder.path[0].rect.center) <= self.speed: # Si la distance entre l'ennemis et le prochain node du chemin est plus petite que la vitesse de l'ennemis
+                                self.pathFinder.path.pop(0) # Enlève ce node du chemin
+                        else:
+                                self.moveTowards(self.pathFinder.path[0].rect.center) # Marche en direction du prochain node du chemin
+                else: # Si l'ennemis n'a plus de chemin mais n'a pas encore atteint sa destination
+                        if self.distanceBetween(self.rect.center, self.pathFinder.finish) <= self.speed: # Si la distance entre l'ennemis et la fin est plus petite que la vitesse de marche de l'ennemis
+                                self.rect.center = self.pathFinder.finish # Place l'ennemis directement sur la fin
+                        else:
+                                self.moveTowards(self.pathFinder.finish) # Marche vers la fin
+
+
+class Map: # Définis une carte jouable
         def __init__(self, name, screen, objectifCoords, items, obstacles, spawnCoords):
                 self.name = name
                 self.screen = screen # La fenètre principale
@@ -213,7 +219,7 @@ class Map: # Définis une carte jouable
 
         def drawObjects(self, objects, screenRect, isTransparent = False, alphaSurface = None): # Calcul les coordonnés écran d'une liste d'objets devant suivre une syntaxe stricte
                 if objects: # Vérifie que la liste donnée n'est pas vide
-                        for obj in objects: 
+                        for obj in objects:
                                 if screenRect.colliderect(obj.rect): # Sélectionne tout les objets en collision avec le rectangle de l'écran, c'est à dire ceux qui devont être affiché
                                         if isTransparent:
                                                 obj.draw((obj.rect.x - screenRect.x, obj.rect.y - screenRect.y), alphaSurface) # Place les objets à déssiner sur leurs emplacements écran
@@ -229,10 +235,10 @@ class Perso:
         def __init__(self, name, fenetre, speed, maxItems, maxHealth, map):
                 self.name = name
                 self.fenetre = fenetre
-                self.sprite = pygame.image.load("Resources/Persos/Sprites/" + name + ".png").convert_alpha() 
+                self.sprite = pygame.image.load("Resources/Persos/Sprites/" + name + ".png").convert_alpha()
                 self.rect = self.sprite.get_rect() # Définis l'image du personnage comme un rectangle
                 self.speed = speed # Vitesse de déplacement du personnage selon le choix du joueur
-                self.maxItems = maxItems # Taille de l'inventaire 
+                self.maxItems = maxItems # Taille de l'inventaire
                 self.map = map # Map dans laquelle on se trouve
                 self.items = []
                 self.health = maxHealth # Met le nombre de points de vie de départ au maximum
@@ -249,9 +255,9 @@ class Perso:
                         chosenY = self.rect.y - screenRect.y # Coordonnée Y écran du joueur
                 self.fenetre.blit(self.sprite, (chosenX, chosenY)) # Affiche l'image du personnage aux coordonnées écran
 
-        def mouv(self, action): 
-            if action == "haut": 
-                self.rect.move_ip(0, -self.speed) # déplace le perso vers le haut 
+        def mouv(self, action):
+            if action == "haut":
+                self.rect.move_ip(0, -self.speed) # déplace le perso vers le haut
                 if self.rect.collidelist(self.map.hitboxes) != -1: # si le perso se trouve sur un hitbox
                     self.rect.move_ip(0, self.speed) # Ramène le perso à la position précédente
             if action == "bas":
@@ -266,7 +272,7 @@ class Perso:
                 self.rect.move_ip(self.speed, 0) # déplace le perso vers la droite
                 if self.rect.collidelist(self.map.hitboxes) != -1:
                     self.rect.move_ip(-self.speed, 0)
-            if action=="ramasser": 
+            if action=="ramasser":
                 if len(self.items) <= self.maxItems: # Vérifie que le perso a encore de la place dans son inventaire
                                 for item in self.map.items: # Cherche dans la liste d'items de cette map
                                         if self.rect.colliderect(item.rect): # Vérifie si le perso se trouve sur un item
@@ -282,155 +288,163 @@ class Perso:
 
                                                 self.map.items.remove(item) # Enlève l'item de la map
                                                 break # Sort de la boucle
-       
 
-class PathFinder:
-        def __init__(self, hitboxes, precision):
-                self.start = None
-                self.finish = None
-                self.hitboxes = hitboxes
-                self.precision = precision
-                self.nodes = []
-                self.path = []
 
-        def nodeInHitbox(self, rect):
+class PathFinder: # Classe permettant de trouver le chemin le plus rapide entre deux points en tenant compte des obstacles
+        def __init__(self, hitboxes, precision, maxRadius):
+                self.start = None # Le point de départ
+                self.finish = None # Le point d'arrivé
+                self.hitboxes = hitboxes # Les hitboxes a prendre en compte 
+                self.precision = precision # La précision de la recherche 
+                self.maxRadius = maxRadius # Radius maximale a ne pas dépasser pour la recherche 
+                self.nodes = [] # La liste des "nodes"
+                self.path = [] # Liste de "nodes" correspondant au chemin le plus rapide. Seulement aggrémenter avec findBest()
+
+        def __nodeInHitbox(self, rect): # Vérifie si le rectangle d'un node se trouve sur des hitboxes
                 if rect.collidelistall(self.hitboxes):
                                 return True
                 return False
 
-        def addNeighbourNodes(self, node):
-                # Vérifie que la node à la droite n'existe pas déja
-                nextNodeCoords = (node.rect.x + node.rect.width, node.rect.y)
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))): 
-                        # Ajoute la node de droite si elle n'existe pas déja
-                        self.nodes.append(Node(len(self.nodes), nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
+        def __addNeighbourNodes(self, node): # Ajoute 8 nodes à la liste de nodes autour du node précisé si ils n'existent pas déjà et ne se trouvent pas sur des hitboxes
+                # Vérifie que le node à la droite n'existe pas déja
+                nextNodeCoords = (node.rect.x + node.rect.width, node.rect.y) # Position du prochain node 
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
+                        # Ajoute le node de droite si elle n'existe pas déja
+                        self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
+                        
+                # Vérifie que le node à la gauche n'existe pas déja
+                nextNodeCoords = (node.rect.x - node.rect.width, node.rect.y) # Position du prochain node 
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
+                        # Ajoute le node de gauche si elle n'existe pas déja
+                        self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
-                # Vérifie que la node à la gauche n'existe pas déja
-                nextNodeCoords = (node.rect.x - node.rect.width, node.rect.y)
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))): 
-                        # Ajoute la node de gauche si elle n'existe pas déja
-                        self.nodes.append(Node(len(self.nodes), nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
+                # Vérifie que le node au dessus n'existe pas déja
+                nextNodeCoords = (node.rect.x, node.rect.y - node.rect.width) # Position du prochain node 
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
+                        # Ajoute le node au dessus si elle n'existe pas déja
+                        self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
-                # Vérifie que la node au dessus n'existe pas déja
-                nextNodeCoords = (node.rect.x, node.rect.y - node.rect.width)
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))): 
-                        # Ajoute la node au dessus si elle n'existe pas déja
-                        self.nodes.append(Node(len(self.nodes), nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
+                # Vérifie que le node en dessous n'existe pas déja
+                nextNodeCoords = (node.rect.x, node.rect.y + node.rect.width) # Position du prochain node 
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
+                        # Ajoute le node en dessous si elle n'existe pas déja
+                        self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
-                # Vérifie que la node en dessous n'existe pas déja
-                nextNodeCoords = (node.rect.x, node.rect.y + node.rect.width)
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))): 
-                        # Ajoute la node en dessous si elle n'existe pas déja
-                        self.nodes.append(Node(len(self.nodes), nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
+                # Vérifie que le node à la droite en haut n'existe pas déja
+                nextNodeCoords = (node.rect.x + node.rect.width, node.rect.y - node.rect.width) # Position du prochain node 
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
+                        # Ajoute le node à la droite en haut si elle n'existe pas déja
+                        self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
-                # Vérifie que la node à la droite en haut n'existe pas déja
-                nextNodeCoords = (node.rect.x + node.rect.width, node.rect.y - node.rect.width)
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))): 
-                        # Ajoute la node à la droite en haut si elle n'existe pas déja
-                        self.nodes.append(Node(len(self.nodes), nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
+                # Vérifie que le node à la droite en bas n'existe pas déja
+                nextNodeCoords = (node.rect.x + node.rect.width, node.rect.y + node.rect.width) # Position du prochain node 
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
+                        # Ajoute le node à la droite en bas si elle n'existe pas déja
+                        self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
-                # Vérifie que la node à la droite en bas n'existe pas déja
-                nextNodeCoords = (node.rect.x + node.rect.width, node.rect.y + node.rect.width)
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))): 
-                        # Ajoute la node à la droite en bas si elle n'existe pas déja
-                        self.nodes.append(Node(len(self.nodes), nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
+                # Vérifie que le node à la gauche en haut n'existe pas déja
+                nextNodeCoords = (node.rect.x - node.rect.width, node.rect.y - node.rect.width) # Position du prochain node 
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
+                        # Ajoute le node à la gauche en haut si elle n'existe pas déja
+                        self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
-                # Vérifie que la node à la gauche en haut n'existe pas déja
-                nextNodeCoords = (node.rect.x - node.rect.width, node.rect.y - node.rect.width)
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))): 
-                        # Ajoute la node à la gauche en haut si elle n'existe pas déja
-                        self.nodes.append(Node(len(self.nodes), nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
+                # Vérifie que le node à la gauche en bas n'existe pas déja
+                nextNodeCoords = (node.rect.x - node.rect.width, node.rect.y + node.rect.width) # Position du prochain node 
+                if (not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.__nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)))) or pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height)).collidepoint(self.finish): # Si le node ne se trouve pas déjà sur l'emplacement d'un autre node et qu'il ne collisionne pas avec des hitboxes ou si un joueur se trouve dedans
+                        # Ajoute le node à la gauche en bas si elle n'existe pas déja
+                        self.nodes.append(self.Node(nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
 
-                # Vérifie que la node à la gauche en bas n'existe pas déja
-                nextNodeCoords = (node.rect.x - node.rect.width, node.rect.y + node.rect.width)
-                if not [x for x in self.nodes if nextNodeCoords == x.rect.topleft] and not self.nodeInHitbox(pygame.Rect(nextNodeCoords, (node.rect.width, node.rect.height))): 
-                        # Ajoute la node à la gauche en bas si elle n'existe pas déja
-                        self.nodes.append(Node(len(self.nodes), nextNodeCoords, node.rect.width, node, 1, self.start, self.finish))
+                node.state = 2 # Change l'état du node pour qu'il ne soit pas pris en compte une deuxième fois par closestNode()
 
-                node.state = 2
-                
-        def closestNode(self):
-                smallestLTlist = []
-                for node in list(filter(lambda x: x.state == 1, self.nodes)):
-                        if smallestLTlist:
-                                if node.totalLength < smallestLTlist[0].totalLength:
-                                        smallestLTlist = [node]
-                                elif node.totalLength == smallestLTlist[0].totalLength:
-                                        smallestLTlist.append(node)
+        def __closestNode(self, includeChecked): # Indique le node le plus proche du point de fin dans la liste de nodes
+                smallestTLList = [] # "Smallest Total Lengths List" - liste des nodes dont la longueur totale (longueur au début + longueur à la fin) est la plus courte
+                for node in (list(filter(lambda x: x.state == 1, self.nodes)) if not includeChecked else self.nodes): # Itère les nodes qui n'ont pas encore été les plus proche
+                        if smallestTLList: # Si un node se trouve déjà dans la liste
+                                if node.totalLength < smallestTLList[0].totalLength:
+                                        smallestTLList = [node] # Si un node est plus petits que les autres nodes de la liste, il les remplace
+                                elif node.totalLength == smallestTLList[0].totalLength:
+                                        smallestTLList.append(node) # Si un node a la même longueur totale que les autres nodes il est seulement ajouté
                         else:
-                                smallestLTlist.append(node)
-                if len(smallestLTlist) > 1:
-                        smallestELlist = []
-                        for node in smallestLTlist:
-                                if smallestELlist:
-                                        if node.endLength < smallestELlist[0].endLength:
-                                                smallestELlist = [node]
-                                        elif node.endLength == smallestELlist[0].endLength:
-                                                smallestELlist.append(node)
+                                smallestTLList.append(node) # On ajoute le premier node du "for" pour avoir quelque chose à comparer
+                if len(smallestTLList) > 1: # Si plusieurs nodes ont la même longueur totale 
+                        smallestELList = [] # "Smallest End Lenghts List" - liste des nodes, qui ont la même longueur totale, dont la longueur à la fin est la plus courte
+                        for node in smallestTLList:
+                                if smallestELList:
+                                        if node.endLength < smallestELList[0].endLength:
+                                                smallestELList = [node] # Si un node est plus petits que les autres nodes de la liste, il les remplace
+                                        elif node.endLength == smallestELList[0].endLength:
+                                                smallestELList.append(node) # Si un node a la même longueur à la fin que les autres nodes il est seulement ajouté
                                 else:
-                                        smallestELlist.append(node)
-                        return smallestELlist[0]
+                                        smallestELList.append(node) # On ajoute le premier node du "for" pour avoir quelque chose à comparer
+                        return smallestELList[0] # On retourne le premier node de la liste de nodes ayant la même longueur totale et à la fin
                 else:
-                        return smallestLTlist[0]
-        
-        def findBest(self, start, finish):
+                        return smallestTLList[0] # Retourne l'unique node le plus proche
+
+        def findBest(self, start, finish): # Trouve le chemin le plus rapide du point début au point fin en tenant compte des obstacles
                 self.start = start
                 self.finish = finish
-                self.path = []
-                self.nodes = [Node(0, (self.start[0] - self.precision / 2, self.start[1] - self.precision / 2), self.precision, None, 1, self.start, finish)]
+                self.path = [] # Initialise la liste contenant le meilleur chemin a prendre
+                self.nodes = [self.Node((self.start[0] - self.precision / 2, self.start[1] - self.precision / 2), self.precision, None, 1, self.start, finish)] # Initialise la liste de tout les nodes avec un node centré sur le point de départ
 
-                while not [x for x in self.nodes if x.rect.colliderect(pygame.Rect(self.finish[0] - self.precision / 2, self.finish[1] - self.precision / 2, self.precision, self.precision))] and len(self.nodes) < 200:
-                        closest = self.closestNode()
-                        self.addNeighbourNodes(closest)
-                current_node = self.closestNode()
-                while current_node.number != 0:
-                        self.path.append(current_node)
+                while not [x for x in self.nodes if x.rect.colliderect(pygame.Rect(self.finish[0] - self.precision / 2, self.finish[1] - self.precision / 2, self.precision, self.precision))] and not any([x for x in self.nodes if x.startLength > self.maxRadius]): # Tant qu'un node n'est pas en collision avec le rectangle centré sur le point de fin et qu'aucun node n'excède le radius maximale précisé, on continue à chercher
+                        closest = self.__closestNode(False) # On cherche le node le plus proche
+                        self.__addNeighbourNodes(closest) # On ajoute les nodes voisin au node le plus proche
+                if any([x for x in self.nodes if x.startLength > self.maxRadius]): # Si un node se trouve en dehors du radius maximale
+                        current_node = self.__closestNode(True) # On retrace le chemin le plus court à l'envers (en incluant les nodes déjà vérifié) en partant du node le plus proche du point de fin 
+                else:
+                        current_node = self.__closestNode(False) # On retrace le chemin le plus court à l'envers en partant du node le plus proche du point de fin 
+                while current_node != self.nodes[0]: # Tant que l'on a pas atteint le node de départ
+                        self.path.append(current_node) # On ajoute le node parent au dernier
                         current_node = current_node.parent
-                return self.path.reverse()     
+                return self.path.reverse() # On retoune la liste du chemin le plus court après l'avoir inversé
 
-        def drawPath(self, screen, screenCoords):
+        def drawPath(self, screen, screenCoords): # Déssine le chemin le plus court à l'aide d'un tracé rouge
                 if self.path:
                         lastNode = None
                         for node in self.path:
-                                pygame.draw.circle(screen, pygame.Color("red"), (node.rect.center[0] - screenCoords[0], node.rect.center[1] - screenCoords[1]), 10)
+                                pygame.draw.circle(screen, pygame.Color("red"), (node.rect.center[0] - screenCoords[0], node.rect.center[1] - screenCoords[1]), 10) # On indique un node du chemin par un cercle rouge à son centre
                                 if lastNode:
-                                        pygame.draw.line(screen, pygame.Color("red"), (node.rect.center[0] - screenCoords[0], node.rect.center[1] - screenCoords[1]), (lastNode.rect.center[0] - screenCoords[0], lastNode.rect.center[1] - screenCoords[1]), 5)
+                                        pygame.draw.line(screen, pygame.Color("red"), (node.rect.center[0] - screenCoords[0], node.rect.center[1] - screenCoords[1]), (lastNode.rect.center[0] - screenCoords[0], lastNode.rect.center[1] - screenCoords[1]), 5) # On indique le chemin à prendre à l'aide d'une ligne rouge
                                 lastNode = node
-                        pygame.draw.line(screen, pygame.Color("red"), (lastNode.rect.center[0] - screenCoords[0], lastNode.rect.center[1] - screenCoords[1]), (self.finish[0] - screenCoords[0], self.finish[1] - screenCoords[1]), 5)
-                        pygame.draw.circle(screen, pygame.Color("yellow"), (self.finish[0] - screenCoords[0], self.finish[1] - screenCoords[1]), 5)
+                        pygame.draw.line(screen, pygame.Color("red"), (lastNode.rect.center[0] - screenCoords[0], lastNode.rect.center[1] - screenCoords[1]), (self.finish[0] - screenCoords[0], self.finish[1] - screenCoords[1]), 5) # On déssine une dernière ligne reliant le dernier node au point de fin
+                        pygame.draw.circle(screen, pygame.Color("yellow"), (self.finish[0] - screenCoords[0], self.finish[1] - screenCoords[1]), 5) # On indique le point de fin à l'aide d'un point jaune
 
+        class Node: # Classe définissant un node
+                def __init__(self, coords, precision, parent, state, startPoint, endPoint):
+                        self.rect = pygame.Rect(coords, (precision, precision)) # Rectangle définissant le node
+                        self.parent = parent # Node parent
+                        self.state = state # Etat du node. 1: à analyser        2: déjà analysé
+                        self.startLength = math.sqrt(pow(startPoint[0] - self.rect.centerx, 2) + pow(startPoint[1] - self.rect.centery, 2)) # Distance du node au point de départ
+                        self.endLength = math.sqrt(pow(endPoint[0] - self.rect.centerx, 2) + pow(endPoint[1] - self.rect.centery, 2)) # Distance du node au point d'arrivée
+                        self.totalLength = self.startLength + self.endLength # Distance totale du node (distance au départ + distance à l'arrivée)
 
-class Node:
-        def __init__(self, number, coords, precision, parent, state, startPoint, endPoint):
-                self.number = number
-                self.rect = pygame.Rect(coords, (precision, precision))
-                self.parent = parent # Node parent
-                self.state = state # Etat du node. 1: à analyser        2: déjà analysé
-                self.startLength = math.sqrt(pow(startPoint[0] - self.rect.centerx, 2) + pow(startPoint[1] - self.rect.centery, 2))
-                self.endLength = math.sqrt(pow(endPoint[0] - self.rect.centerx, 2) + pow(endPoint[1] - self.rect.centery, 2))
-                self.totalLength = self.startLength + self.endLength
+                def draw(self, coords, screen): # Dessine le node aux coordonnées écran indiqués
+                        if self.state == 2: # Si le node a déjà été analysé
+                                chosenColor = pygame.Color(107, 244, 66, 127)
+                        elif self.state == 1: # Si le node n'a pas ncore été analysé
+                                chosenColor = pygame.Color(65, 244, 241, 127)
 
-        def draw(self, coords, screen):
-                if self.number == 0:
-                        chosenColor = pygame.Color(244, 238, 65, 127)
-                elif self.state == 2:
-                        chosenColor = pygame.Color(107, 244, 66, 127)
-                elif self.state == 1:
-                        chosenColor = pygame.Color(65, 244, 241, 127)
-
-                pygame.draw.rect(screen, chosenColor, pygame.Rect(coords, (self.rect.width, self.rect.height)))
+                        pygame.draw.rect(screen, chosenColor, pygame.Rect(coords, (self.rect.width, self.rect.height)))
 
 
 class Bullet :
-         def __init__(self, map, perso, screen, screenRect):
-             screenMouseCoords = pygame.mouse.get_pos() #on obtient les coordonées de la souris
+        def __init__(self, map, perso, screen, screenRect, weaponCharacteristics):
+                screenMouseCoords = pygame.mouse.get_pos() #on obtient les coordonées de la souris
+                self.weaponCharacteristics = weaponCharacteristics
+                realMouseCoords = screenMouseCoords + screenRect.topleft #on obtient les coordonnées réelles du curseur (pas dans le repère de la map)
+                bulletSpeed = weaponCharacteristics.speed  #on défini un coefficient de vitesse pour la balle
+                self.direction = ((realMouseCoords.x - perso.rect.center.x, realMouseCoords.y)*bulletSpeed - (perso.rect.center.y)*bulletSpeed) #on défini des composantes de direction pour la balle
+                self.rect = rect(perso.center,(1, 1))   #on défini le rectangle lié à la balle
 
-             realMouseCoords = screenMouseCoords + screenRect.topleft #on obtient les coordonnées réelles du curseur (pas dans le repère de la map)
-             bulletSpeed = perso.items[0].characteristics.speed   #on défini un coefficient de vitesse pour la balle
-             direction = ((realMouseCoords.x - perso.rect.center.x, realMouseCoords.y)*bulletSpeed - (perso.rect.center.y)*bulletSpeed) #on défini des composantes de direction pour la balle
-             self.rect = rect(perso.center,(1, 1))   #on défini le rectangle lié à la balle
-             while not self.rect.collidelist(map.hitboxes):    #on vérifie que la balle ne collisionne pas d'hitboxes
-                    pygame.self.rect.move_ip(direction[0], direction[1])  #on donne la trajectoire à la balle
+        def move (self):
+                pygame.self.rect.move_ip(direction[0], direction[1])  #on donne la trajectoire à la balle
+                if self.rect.collidelist([hitbox.rect for hitbox in map.hitboxes]):    #on vérifie que la balle ne collisionne pas d'hitboxes
+                        print("supprimer l'objet")
+
+                collision = [x for x in map.enemies if self.rect.colliderect(x.rect)]
+                if any(collision):
+                        for enemy in collision:
+                                enemy.health -= self.weaponCharacteristics.speed
 
 
 class Bouton:
@@ -440,10 +454,10 @@ class Bouton:
                 self.size=size
                 self.screen=screen
                 self.text=text
-                
+
         def draw(self):
                 pygame.draw.rect(self.screen,pygame.Color(255,0,0), pygame.Rect(self.coords[0], self.coords[1], self.rect.size[0],self.rect.size[1]))
-                font=pygame.font.SysFont("Times New Roman",50,bold=False,italic=False) 
+                font=pygame.font.SysFont("Times New Roman",50,bold=False,italic=False)
                 texte=font.render(self.text,1,(0,0,0))
                 self.screen.blit(texte,(self.coords[0]+30,self.coords[1]+30))
 
