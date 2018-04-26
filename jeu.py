@@ -180,6 +180,7 @@ def menuDepart():
                     notDone=False
                 if boutonQuitter.rect.collidepoint(event.pos[0],event.pos[1]):
                     notDone=False
+    
 
 def jeu():
     global notDone  
