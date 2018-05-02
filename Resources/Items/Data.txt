@@ -1,4 +1,4 @@
-Pistol,WEAPON,20,90,20,False
-AK47,WEAPON,15,85,20,False
+Pistol,WEAPON,20,90,5,False
+AK47,WEAPON,15,85,5,False
 HealthPack,HEALTH,50
 Ammo,AMMO,30

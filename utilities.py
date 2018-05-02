@@ -46,22 +46,15 @@ class Hitbox:
                 pygame.draw.rect(screen, pygame.Color(191, 63, 63, 127), pygame.Rect(coords[0], coords[1], self.rect.w, self.rect.h))
 
 
-class Obstacle: # Définis des obstacles en perspective et qui présente une hitbox
+class Obstacle: # Définis des obstacles avec une image et une hitbox
         def __init__(self, name, hitbox):
                 self.name = name
-                self.lowerSprite = pygame.image.load("Resources/Obstacles/Sprites/" + name + "Lower.png").convert_alpha() # La partie basse de l'objet qui doit toujours se trouver derrière le joueur
-                self.upperSprite = pygame.image.load("Resources/Obstacles/Sprites/" + name + "Upper.png").convert_alpha() # La partie haute de l'objet qui doit toujours se trouver devant le joueur
-                self.rect = self.lowerSprite.get_rect()
+                self.sprite = pygame.image.load("Resources/Obstacles/Sprites/" + name + ".png").convert_alpha() # Le sprite de l'objet
+                self.rect = self.sprite.get_rect()
                 self.hitbox = hitbox # La hitbox associé à l'objet
-                self.lowerDrawn = False # Booléen définissant quelle partie de l'objet doit être dessiné. False: partie basse, True: partie haute
 
-        def draw(self, coords, screen): # Dessine l'objet en deux parties s'alternant. La partie basse est toujours dessiné avant la partie haute
-                if self.lowerDrawn: # Dessiner la partie haute
-                        screen.blit(self.upperSprite, coords)
-                        self.lowerDrawn = False
-                else: # Dessiner la partie basse
-                        screen.blit(self.lowerSprite, coords)
-                        self.lowerDrawn = True
+        def draw(self, coords, screen): # Dessine l'objet
+                screen.blit(self.sprite, coords)
 
         def __deepcopy__(self, memo): # https://stackoverflow.com/a/15774013
                 cls = self.__class__
@@ -244,6 +237,7 @@ class Perso:
                 self.health = maxHealth # Met le nombre de points de vie de départ au maximum
                 self.maxhealth = maxHealth # Points de vie maximum que le perso peut avoir
                 self.ammo = 25 # Le perso a 25 munitions au départ de la partie
+                self.bullets = []
 
         def draw(self, screenRect):
                 chosenX = screenRect.w / 2 # Coordonnée X du joueur au centre de l'écran
@@ -255,39 +249,52 @@ class Perso:
                         chosenY = self.rect.y - screenRect.y # Coordonnée Y écran du joueur
                 self.fenetre.blit(self.sprite, (chosenX, chosenY)) # Affiche l'image du personnage aux coordonnées écran
 
-        def mouv(self, action):
-            if action == "haut":
-                self.rect.move_ip(0, -self.speed) # déplace le perso vers le haut
-                if self.rect.collidelist(self.map.hitboxes) != -1: # si le perso se trouve sur un hitbox
-                    self.rect.move_ip(0, self.speed) # Ramène le perso à la position précédente
-            if action == "bas":
-                self.rect.move_ip(0, self.speed) # déplace le perso vers le bas
-                if self.rect.collidelist(self.map.hitboxes) != -1:
-                    self.rect.move_ip(0, -self.speed)
-            if action == "gauche":
-                self.rect.move_ip(-self.speed, 0) # déplace le perso vers la gauche
-                if self.rect.collidelist(self.map.hitboxes) != -1:
-                    self.rect.move_ip(self.speed, 0)
-            if action == "droite":
-                self.rect.move_ip(self.speed, 0) # déplace le perso vers la droite
-                if self.rect.collidelist(self.map.hitboxes) != -1:
-                    self.rect.move_ip(-self.speed, 0)
-            if action=="ramasser":
-                if len(self.items) <= self.maxItems: # Vérifie que le perso a encore de la place dans son inventaire
-                                for item in self.map.items: # Cherche dans la liste d'items de cette map
-                                        if self.rect.colliderect(item.rect): # Vérifie si le perso se trouve sur un item
-                                                if item.type == "HEALTH": #verifie que l'item est du type santé
-                                                        if self.health < self.maxhealth : #vérifie que le perso n'est pas au max de sa vie
-                                                                self.health = self.health + item.value #ajoute la valeur de l'item santé à la santé du perso
-                                                                if self.health >= self.maxhealth :  # verifie si le niveau de santé ajouté dépasse la valeur maximale de santé
-                                                                        self.health = self.maxhealth    #ramène le niveau de santé au maximum
-                                                elif item.type == "AMMO":
-                                                        self.ammo = self.ammo + item.value
-                                                elif item.type == "WEAPON":
-                                                    self.items.append(item) # Ajoute l'item à l'inventaire du perso
+        def mouv(self, action, screenRect):
+                if action == "haut":
+                        self.rect.move_ip(0, -self.speed) # déplace le perso vers le haut
+                        if self.rect.collidelist(self.map.hitboxes) != -1: # si le perso se trouve sur un hitbox
+                                self.rect.move_ip(0, self.speed) # Ramène le perso à la position précédente
+                if action == "bas":
+                        self.rect.move_ip(0, self.speed) # déplace le perso vers le bas
+                        if self.rect.collidelist(self.map.hitboxes) != -1:
+                                self.rect.move_ip(0, -self.speed)
+                if action == "gauche":
+                        self.rect.move_ip(-self.speed, 0) # déplace le perso vers la gauche
+                        if self.rect.collidelist(self.map.hitboxes) != -1:
+                                self.rect.move_ip(self.speed, 0)
+                if action == "droite":
+                        self.rect.move_ip(self.speed, 0) # déplace le perso vers la droite
+                        if self.rect.collidelist(self.map.hitboxes) != -1:
+                                self.rect.move_ip(-self.speed, 0)
+                if action=="ramasser":
+                        if len(self.items) <= self.maxItems: # Vérifie que le perso a encore de la place dans son inventaire
+                                        for item in self.map.items: # Cherche dans la liste d'items de cette map
+                                                if self.rect.colliderect(item.rect): # Vérifie si le perso se trouve sur un item
+                                                        if item.type == "HEALTH": #verifie que l'item est du type santé
+                                                                if self.health < self.maxhealth : #vérifie que le perso n'est pas au max de sa vie
+                                                                        self.health = self.health + item.value #ajoute la valeur de l'item santé à la santé du perso
+                                                                        if self.health >= self.maxhealth :  # verifie si le niveau de santé ajouté dépasse la valeur maximale de santé
+                                                                                self.health = self.maxhealth    #ramène le niveau de santé au maximum
+                                                        elif item.type == "AMMO":
+                                                                self.ammo = self.ammo + item.value
+                                                        elif item.type == "WEAPON":
+                                                                self.items.append(item) # Ajoute l'item à l'inventaire du perso
 
-                                                self.map.items.remove(item) # Enlève l'item de la map
-                                                break # Sort de la boucle
+                                                        self.map.items.remove(item) # Enlève l'item de la map
+                                                        break # Sort de la boucle
+                if action == 'tirer':
+                        if any(self.items):
+                                self.bullets.append(Bullet(self.map, self, self.fenetre, screenRect, self.items[0].characteristics))
+
+        def mouvBullets(self):
+            for n in self.bullets :
+                n.move()
+                if n.exist == False :
+                    self.bullets.remove(n)
+
+        def drawBullets(self, screenRect, screen) :
+            for n in self.bullets :
+                pygame.draw.rect(screen,pygame.Color("black"), n.rect.move((-screenRect[0],-screenRect[1])))
 
 
 class PathFinder: # Classe permettant de trouver le chemin le plus rapide entre deux points en tenant compte des obstacles
@@ -432,19 +439,30 @@ class Bullet :
                 screenMouseCoords = pygame.mouse.get_pos() #on obtient les coordonées de la souris
                 self.weaponCharacteristics = weaponCharacteristics
                 realMouseCoords = screenMouseCoords + screenRect.topleft #on obtient les coordonnées réelles du curseur (pas dans le repère de la map)
-                bulletSpeed = weaponCharacteristics.speed  #on défini un coefficient de vitesse pour la balle
-                self.direction = ((realMouseCoords.x - perso.rect.center.x, realMouseCoords.y)*bulletSpeed - (perso.rect.center.y)*bulletSpeed) #on défini des composantes de direction pour la balle
-                self.rect = rect(perso.center,(1, 1))   #on défini le rectangle lié à la balle
+                self.map = map
+
+                angle = self.atan2Normalized((perso.rect.centery - realMouseCoords[1]), (realMouseCoords[0] - perso.rect.centerx)) # Angle de la destination par rapport au personnage dans la plan du repère
+                self.direction = (self.weaponCharacteristics.speed * round(math.cos(angle), 5), -self.weaponCharacteristics.speed * round(math.sin(angle), 5)) # Trouve les coefficients avec lesquels incrémenté les coordonnées de l'ennemi pour atteindre la destination à l'aide de trigonométrie
+
+                self.rect = pygame.Rect((perso.rect.centerx - 2, perso.rect.centery - 2),(4, 4))   #on défini le rectangle lié à la balle
+                self.exist = True
+
+        def atan2Normalized(self, y, x): # Retourne l'angle d'un point par rapport à l'origine du repère (https://stackoverflow.com/a/10343477)
+                result = math.atan2(y, x)
+                if result < 0: # Ajoute 2π à l'angle s'il est négatif
+                        result += 2 * math.pi
+                return result
 
         def move (self):
-                pygame.self.rect.move_ip(direction[0], direction[1])  #on donne la trajectoire à la balle
-                if self.rect.collidelist([hitbox.rect for hitbox in map.hitboxes]):    #on vérifie que la balle ne collisionne pas d'hitboxes
-                        print("supprimer l'objet")
+                self.rect.move_ip(self.direction[0], self.direction[1])  #on donne la trajectoire à la balle
+                if any(self.rect.collidelistall([hitbox.rect for hitbox in self.map.hitboxes])):    #on vérifie que la balle ne collisionne pas d'hitboxes
+                        self.exist = False
 
-                collision = [x for x in map.enemies if self.rect.colliderect(x.rect)]
+                collision = [x for x in self.map.enemies if self.rect.colliderect(x.rect)]
                 if any(collision):
                         for enemy in collision:
                                 enemy.health -= self.weaponCharacteristics.speed
+                                self.exist = False
 
 
 class Bouton:

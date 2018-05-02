@@ -67,8 +67,11 @@ def loadEnemies(): # Charge les différents ennemis dans une liste
     return tempEnemies
 
 
+screenRect = None
 drawHitboxes = False # Booléen définissant si les hitbox sont affiché ou non
 def draw(): # Retrace tout les éléments du jeu. Ordre important
+    global screenRect 
+
     if widthSmaller: # Lorsque la largeur de la map est plus petite que la largeur de l'écran
         chosenX = map.size[0] / 2 - screenSize[0] / 2 # L'emplacement X du rectangle écran définit par rapport à la map pour que celle-ci soit centré
         pg.draw.rect(screen, pg.Color(0, 0, 0), pg.Rect((0, 0), screenSize)) # Déssine le fond de l'écran en noir pour que les anciens éléments ne réapparaisse pas
@@ -94,11 +97,12 @@ def draw(): # Retrace tout les éléments du jeu. Ordre important
             screenRect.y = map.size[1] - screenRect.height
 
     map.draw(screenRect, widthSmaller, heightSmaller) # Dessine la map
-    map.drawObjects(map.obstacles, screenRect) # Dessine les obstacles tel que des bâtiments. Le premier appel dessine la partie basse des obstacles coorespondant à la hitbox
+    map.drawObjects([obstacle for obstacle in map.obstacles if char.rect.bottom >= obstacle.rect.bottom], screenRect) # Dessine les obstacles devant se trouver "en dessous" du joueur
     map.drawObjects(map.items, screenRect) # Dessine les items
     char.draw(screenRect) # dessine le perso à ses nouvelles coordonnées
     map.drawObjects(map.enemies, screenRect) # Dessine les ennemis
-    map.drawObjects(map.obstacles, screenRect) # Le deuxième appel dessine la partie haute des obstacles. Les deux appels simule la perspective
+    char.drawBullets(screenRect, screen)
+    map.drawObjects([obstacle for obstacle in map.obstacles if obstacle.rect.bottom > char.rect.bottom], screenRect) # Dessine les obstacles devant se trouver "au dessus" du joueur
     if drawHitboxes:
         alphaSurface.fill((255,255,255,0)) # Enlève ce qu'il se trouvait sur la surface auparavant
         map.drawObjects(map.hitboxes, screenRect, True, alphaSurface) # Déssine les hitbox de la map si ils ne sont pas déjà affichés
@@ -113,17 +117,20 @@ def react():
     global drawHitboxes
     global f1Pressed
 
+    if pg.mouse.get_pressed()[0] :
+        char.mouv('tirer', screenRect)
+    char.mouvBullets()
     key=pg.key.get_pressed() # liste les appui sur le clavier
     if key[K_UP]: # Appui sur la flèche du haut
-        char.mouv("haut")
+        char.mouv("haut", screenRect)
     if key[K_DOWN]: # Appui sur la flèche du bas
-        char.mouv("bas")
+        char.mouv("bas", screenRect)
     if key[K_LEFT]: # Appui sur la flèche de gauche
-        char.mouv("gauche")
+        char.mouv("gauche", screenRect)
     if key[K_RIGHT]: # Appui sur la flèche de droite
-        char.mouv("droite")
+        char.mouv("droite", screenRect)
     if key[K_e]: #Ramasser un item
-        char.mouv("ramasser")
+        char.mouv("ramasser", screenRect)
     if key[K_F1]: #Afficher les hitbox
         if not drawHitboxes and not f1Pressed: # Les hitbox ne sont jusque là pas affichés et l'utilisateur n'a auparavant pas appuyé sur F1
             drawHitboxes = True # Afficher les hitbox
@@ -148,6 +155,7 @@ map.appendEnemies(enemies)
 
 characters = loadCharacters()
 char = characters[0] # Perso choisi par l'utilisateur
+char.items.append(items[0])
 map.players = characters
 
 widthSmaller = False # Booléen définissant si la largeur de la map est plus petite que celle de l'écran
