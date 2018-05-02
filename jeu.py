@@ -141,7 +141,7 @@ items = loadItems()
 obstacles = loadObstacles()
 
 maps = loadMaps()
-map = maps[2] # Map choisie par l'utilisateur
+map = maps[1] # Map choisie par l'utilisateur
 
 enemies = loadEnemies()
 map.appendEnemies(enemies)
@@ -161,7 +161,7 @@ if map.size[1] < screenSize[1]:
 
 #region menu and game fonctions
 def menuDepart():
-    fondMenu=pg.image.load("Resources/Menus/BackgroundMenuDépart.png")
+    fondMenu=pg.image.load("Resources/Menus/BackgroundMenuDepart.png")
     fondMenu=pg.transform.scale(fondMenu,screenSize)
     screen.blit(fondMenu,(0,0))
     boutonJouer=ut.Bouton((750,200),"Jouer",(200,100),screen)
@@ -179,29 +179,82 @@ def menuDepart():
                     jeu()
                     notDone=False
                 if boutonQuitter.rect.collidepoint(event.pos[0],event.pos[1]):
+                    pg.quit() # quitte pygame
                     notDone=False
-    
+
+def menuFin():
+    notDone2=True
+    fondMenu2=pg.image.load("Resources/Menus/BackgroundMenuFin.png")
+    fondMenu2=pg.transform.scale(fondMenu2,screenSize)
+    screen.blit(fondMenu2,(0,0))
+    boutonMenu=ut.Bouton((600,300),"Retour au Menu",(500,100),screen)
+    boutonMenu.draw()
+    boutonQuitter=ut.Bouton((800,500),"Quitter",(200,100),screen)
+    boutonQuitter.draw()
+    pg.display.flip()
+    while notDone2:
+        for event in pg.event.get():
+            if event.type==MOUSEBUTTONDOWN and event.button==1:
+                if boutonMenu.rect.collidepoint(event.pos[0],event.pos[1]):
+                    menuDepart()
+                    notDone2=False
+                if boutonQuitter.rect.collidepoint(event.pos[0],event.pos[1]):
+                    notDone2=False
+                    pg.quit() # quitte pygame
+
+def menuPause():
+    notDone3=True
+    boutonJouer=ut.Bouton((600,300),"Retour au Jeu",(500,100),screen)
+    boutonJouer.draw()
+    boutonMenu=ut.Bouton((600,500),"Retour au Menu",(500,100),screen)
+    boutonMenu.draw()
+    boutonQuitter=ut.Bouton((600,700),"Quitter",(200,100),screen)
+    boutonQuitter.draw()
+    pg.display.flip()
+    while notDone3:
+        for event in pg.event.get():
+            if event.type==MOUSEBUTTONDOWN and event.button==1:
+                if boutonJouer.rect.collidepoint(event.pos[0],event.pos[1]):
+                    jeu()
+                    notDone3=False
+                if boutonMenu.rect.collidepoint(event.pos[0],event.pos[1]):
+                    menuDepart()
+                    notDone3=False
+                if boutonQuitter.rect.collidepoint(event.pos[0],event.pos[1]):
+                    notDone3=False
+                    pg.quit() # quitte pygame
 
 def jeu():
-    global notDone  
+    global notDone
     notDone = True # Vrai tant que l'utilisateur souhaite jouer
-    while notDone: # Tant que done est égal à True : 
+    while notDone: # Tant que done est égal à True :
         startTime = time.time() # temps de début de la boucle en s
         draw() # Tout retracé
         react() # Vérifier les coordonnées
         for event in pg.event.get(): #vérifie tous les événements possibles
-            if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE): # si l'événement est un quitter ou l'utilisateur utilise échap
+            if event.type == QUIT: # si l'événement est un quitter
                 notDone = False # sort de la boucle
+                pg.quit()
             if event.type ==MOUSEBUTTONDOWN and event.button==3:
                 menuDepart()
-                
+                notDone=False
+            if event.type==KEYUP and event.key==K_SPACE:
+                menuFin()
+                notDone=False
+            if event.type==KEYUP and event.key==K_ESCAPE:
+                menuPause()
+                notDone=False
+
+
+
+
+
         pg.time.Clock().tick_busy_loop(120) # Limite les FPS au maximum indiqué
         print("FPS: ", round(1.0 / (time.time() - startTime), 2)) # FPS = 1 / temps de la boucle
+
 #endregion
 
 menuDepart()
-
-pg.quit() # quitte pygame
 
 
 
