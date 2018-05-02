@@ -22,6 +22,8 @@ alphaSurface.fill((255,255,255,0)) # Rend la surface semi-transparente
 #endregion
 
 
+#region load, draw and react
+
 def loadItems(): # Charge les types d'items dans une liste
     tempItems = [] # Liste temporaire des items
     with open("Resources/Items/Data.txt") as itemsFile: 
@@ -140,6 +142,7 @@ def react():
     else:
         f1Pressed = False
     map.moveEnemies()
+#endregion
 
 
 #region resources setup
@@ -239,6 +242,9 @@ def jeu():
         startTime = time.time() # temps de début de la boucle en s
         draw() # Tout retracé
         react() # Vérifier les coordonnées
+        if char.health==0:
+            menuFin()
+            notDone=False
         for event in pg.event.get(): #vérifie tous les événements possibles
             if event.type == QUIT: # si l'événement est un quitter
                 notDone = False # sort de la boucle
@@ -246,9 +252,7 @@ def jeu():
             if event.type ==MOUSEBUTTONDOWN and event.button==3:
                 menuDepart()
                 notDone=False
-            if event.type==KEYUP and event.key==K_SPACE:
-                menuFin()
-                notDone=False
+            
             if event.type==KEYUP and event.key==K_ESCAPE:
                 menuPause()
                 notDone=False
