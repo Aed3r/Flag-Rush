@@ -1,4 +1,7 @@
-Pistol,WEAPON,20,90,5,False
-AK47,WEAPON,15,85,5,False
-HealthPack,HEALTH,50
+Pistol,WEAPON,25,90,10,False,False
+Assault Rifle,WEAPON,20,85,10,False,True
+Shotgun,WEAPON,30,70,8,False,False
+Mini Gun,WEAPON,20,75,9,False,True
+Claymore,EXPLOSIVE,50
+Health Pack,HEALTH,50
 Ammo,AMMO,30

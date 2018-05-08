@@ -1,3 +1,12 @@
 brics,600,0
 redCar,100,920
 tree1,0,0
+tree2,0,50
+tree1,0,100
+tree2,0,150
+objectif,500,500
+brics,1780,6
+blueCar,1591,533
+blueCar,1515,729
+blueCar,1994,1212
+objectif,810,930
