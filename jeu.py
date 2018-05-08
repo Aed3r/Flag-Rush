@@ -208,6 +208,12 @@ def react():
       if not placeObjects:
             map.moveEnemies()
 
+      for enemy in char.rect.collidelistall([x.rect for x in map.enemies]):
+            char.health-=1
+      if char.health==0:
+            menuFin()
+            notDone=False
+
       if placeObjects:
             map.objectPlacer("update", screenRect) # Met à jour l'emplacement de l'objet "fantôme" en fonction des coordonnées de la souris
 
