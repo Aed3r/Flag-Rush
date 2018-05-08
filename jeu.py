@@ -142,6 +142,11 @@ def react():
     else:
         f1Pressed = False
     map.moveEnemies()
+    for enemy in char.rect.collidelistall([x.rect for x in map.enemies]):
+        char.health-=1
+    if char.health==0:
+        menuFin()
+        notDone=False
 #endregion
 
 
@@ -198,9 +203,11 @@ def menuFin():
     fondMenu2=pg.image.load("Resources/Menus/BackgroundMenuFin.png")
     fondMenu2=pg.transform.scale(fondMenu2,screenSize)
     screen.blit(fondMenu2,(0,0))
-    boutonMenu=ut.Bouton((600,300),"Retour au Menu",(500,100),screen)
+    gameOver=pg.image.load("Resources/Menus/gameOver.jpg")
+    screen.blit(gameOver,(400,100))
+    boutonMenu=ut.Bouton((600,600),"Retour au Menu",(500,100),screen)
     boutonMenu.draw()
-    boutonQuitter=ut.Bouton((800,500),"Quitter",(200,100),screen)
+    boutonQuitter=ut.Bouton((800,800),"Quitter",(200,100),screen)
     boutonQuitter.draw()
     pg.display.flip()
     while notDone2:
@@ -242,9 +249,7 @@ def jeu():
         startTime = time.time() # temps de début de la boucle en s
         draw() # Tout retracé
         react() # Vérifier les coordonnées
-        if char.health==0:
-            menuFin()
-            notDone=False
+        
         for event in pg.event.get(): #vérifie tous les événements possibles
             if event.type == QUIT: # si l'événement est un quitter
                 notDone = False # sort de la boucle
@@ -252,10 +257,10 @@ def jeu():
             if event.type ==MOUSEBUTTONDOWN and event.button==3:
                 menuDepart()
                 notDone=False
-            
             if event.type==KEYUP and event.key==K_ESCAPE:
                 menuPause()
                 notDone=False
+                
 
 
 

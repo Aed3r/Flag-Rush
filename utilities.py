@@ -224,7 +224,7 @@ class Map: # Définis une carte jouable
                         enemy.move()
 
 
-class Perso:
+class Perso:  # Définis un personnage contrôlable par le joueur
         def __init__(self, name, fenetre, speed, maxItems, maxHealth, map):
                 self.name = name
                 self.fenetre = fenetre
@@ -465,7 +465,7 @@ class Bullet :
                                 self.exist = False
 
 
-class Bouton:
+class Bouton:  # Classe permettant de créer des boutons 
         def __init__(self,coords,text,size,screen):
                 self.rect=pygame.Rect(coords,size)
                 self.coords=coords
