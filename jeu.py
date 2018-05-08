@@ -41,6 +41,8 @@ fpsFont = pg.font.SysFont("Roboto", 10, False, False) # La police utilisé pour 
 #endregion
 
 
+#region load, draw and react
+
 def loadItems(): # Charge les types d'items dans une liste
       tempItems = [] # Liste temporaire des items
       with open("Resources/Items/Data.txt") as itemsFile: 
@@ -239,24 +241,26 @@ def menuDepart():
                               notDone=False
 
 def menuFin():
-      notDone2=True
-      fondMenu2=pg.image.load("Resources/Menus/BackgroundMenuFin.png")
-      fondMenu2=pg.transform.scale(fondMenu2,screenSize)
-      screen.blit(fondMenu2,(0,0))
-      boutonMenu=ut.Bouton((600,300),"Retour au Menu",(500,100),screen)
-      boutonMenu.draw()
-      boutonQuitter=ut.Bouton((800,500),"Quitter",(200,100),screen)
-      boutonQuitter.draw()
-      pg.display.flip()
-      while notDone2:
-            for event in pg.event.get():
-                  if event.type==MOUSEBUTTONDOWN and event.button==1:
-                        if boutonMenu.rect.collidepoint(event.pos[0],event.pos[1]):
-                              menuDepart()
-                              notDone2=False
-                        if boutonQuitter.rect.collidepoint(event.pos[0],event.pos[1]):
-                              notDone2=False
-                              pg.quit() # quitte pygame
+    notDone2=True
+    fondMenu2=pg.image.load("Resources/Menus/BackgroundMenuFin.png")
+    fondMenu2=pg.transform.scale(fondMenu2,screenSize)
+    screen.blit(fondMenu2,(0,0))
+    gameOver=pg.image.load("Resources/Menus/gameOver.jpg")
+    screen.blit(gameOver,(400,100))
+    boutonMenu=ut.Bouton((600,600),"Retour au Menu",(500,100),screen)
+    boutonMenu.draw()
+    boutonQuitter=ut.Bouton((800,800),"Quitter",(200,100),screen)
+    boutonQuitter.draw()
+    pg.display.flip()
+    while notDone2:
+        for event in pg.event.get():
+            if event.type==MOUSEBUTTONDOWN and event.button==1:
+                if boutonMenu.rect.collidepoint(event.pos[0],event.pos[1]):
+                    menuDepart()
+                    notDone2=False
+                if boutonQuitter.rect.collidepoint(event.pos[0],event.pos[1]):
+                    notDone2=False
+                    pg.quit() # quitte pygame
 
 def menuPause():
       notDone3=True

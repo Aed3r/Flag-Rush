@@ -595,7 +595,7 @@ class Bullet :
                                 self.exist = False
 
 
-class Bouton:
+class Bouton:  # Classe permettant de créer des boutons 
         def __init__(self,coords,text,size,screen):
                 self.rect=pygame.Rect(coords,size)
                 self.coords=coords
