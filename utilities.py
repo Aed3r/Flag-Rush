@@ -572,6 +572,9 @@ class Bullet :
                 self.map = map
 
                 angle = self.atan2Normalized((perso.rect.centery - realMouseCoords[1]), (realMouseCoords[0] - perso.rect.centerx)) # Angle de la destination par rapport au personnage dans la plan du repère
+                aim = random.randint((- 100 + weaponCharacteristics.aim)/2, (100 - weaponCharacteristics.aim)/2)
+                aimAngle = (math.pi * aim) / 100
+                angle += aimAngle
                 self.direction = (self.weaponCharacteristics.speed * round(math.cos(angle), 5), -self.weaponCharacteristics.speed * round(math.sin(angle), 5)) # Trouve les coefficients avec lesquels incrémenté les coordonnées de l'ennemi pour atteindre la destination à l'aide de trigonométrie
 
                 self.rect = pygame.Rect((perso.rect.centerx - 2, perso.rect.centery - 2),(4, 4))   #on défini le rectangle lié à la balle
