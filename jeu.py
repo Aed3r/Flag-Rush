@@ -308,7 +308,7 @@ def jeu():
                         notDone = False # sort de la boucle
                         pg.quit()
                   elif event.type == MOUSEBUTTONUP: # Si la souris est utilisé
-                        if event.button == 1 and not placeObjects:
+                        if event.button == 1 and not placeObjects and any(char.items) and not char.items[0].characteristics.isAutomatic :
                               char.mouv('tirer', screenRect)
                         elif event.button == 1 and placeObjects: # Place un nouvel objet
                               map.objectPlacer("place", screenRect)  
@@ -316,7 +316,11 @@ def jeu():
                         elif event.button == 4 and placeObjects: # Modifie l'objet a placer
                               map.objectPlacer("scrollUp", screenRect)
                         elif event.button == 5 and placeObjects: # Modifie l'objet a placer
-                              map.objectPlacer("scrollDown", screenRect)				
+                              map.objectPlacer("scrollDown", screenRect)
+                  elif event.type == MOUSEBUTTONDOWN : 
+                        if event.button == 1 and not placeObjects and any(char.items) and not char.items[0].characteristics.isAutomatic :
+                              char.move('tirer',screenRect)
+
                   elif event.type == KEYUP: # Si le clavier est utilisé. Permet l'activation du menu pause ou des fonctions caché (pour afficher, dans l'ordre, les hitboxes, les chemins, les FPS, le placeur d'objets et changer l'image de fonc en fonction des objets placé)
                         if event.key == K_ESCAPE and placeObjects:
                               placeObjects = False
