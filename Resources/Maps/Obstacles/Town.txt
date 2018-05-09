@@ -19,7 +19,6 @@ redCar,1928,1573
 
 
 
-blueCar,1404,1568
 yellowCar,1208,1569
 yellowCar,934,1575
 redCar,428,1562
