@@ -32,7 +32,7 @@ mapObjects = [] # Liste de tout les objets de la map
 widthSmaller = None # Booléen définissant si la largeur de la map est plus petite que celle de l'écran
 heightSmaller = None # Booléen définissant si la hauteur de la map est plus petite que celle de l'écran
 
-coordsHealthRect=(screenSize[0]/4,screenSize[1]-50) 
+coordsHealthRect=(screenSize[0]/4,screenSize[1]-50)
 lengthHealthRect=(screenSize[0]/2,50) 
 
 drawHitboxes = False # Booléen définissant si l'on voit les hitboxes ou non
@@ -189,8 +189,8 @@ def draw(): # Retrace tout les éléments du jeu. Ordre important
                   screen.blit(map.objectToPlace[0].sprite, (map.objectToPlace[1][0] - screenRect[0], map.objectToPlace[1][1] - screenRect[1]))
       if drawHitboxes or drawPaths or placeObjects:
             screen.blit(alphaSurface, (0, 0)) # Dessine la couche semi-transparente qui contient les hitbox et les chemins
-      pg.draw.rect(screen,pg.Color("grey"),pg.Rect(coordsHealthRect,lengthHealthRect))  
-      pg.draw.rect(screen,pg.Color(255,0,0),pg.Rect(coordsHealthRect,(lengthHealthRect[0]*char.health/100,lengthHealthRect[1])))
+      pg.draw.rect(screen,pg.Color("grey"),pg.Rect(coordsHealthRect,lengthHealthRect)) 
+      pg.draw.rect(screen,pg.Color(255,0,0),pg.Rect(coordsHealthRect,(lengthHealthRect[0]*char.health/100,lengthHealthRect[1]))) 
       pg.display.flip() # Rafraichi le jeu
 
 def react():
@@ -312,7 +312,7 @@ def jeu():
                         notDone = False # sort de la boucle
                         pg.quit()
                   elif event.type == MOUSEBUTTONUP: # Si la souris est utilisé
-                        if event.button == 1 and not placeObjects and any(char.items) and not char.items[0].characteristics.isAutomatic :
+                        if event.button == 1 and not placeObjects:
                               char.mouv('tirer', screenRect)
                         elif event.button == 1 and placeObjects: # Place un nouvel objet
                               map.objectPlacer("place", screenRect)
@@ -321,10 +321,6 @@ def jeu():
                               map.objectPlacer("scrollUp", screenRect)
                         elif event.button == 5 and placeObjects: # Modifie l'objet a placer
                               map.objectPlacer("scrollDown", screenRect)
-                  elif event.type == MOUSEBUTTONDOWN : 
-                        if event.button == 1 and not placeObjects and any(char.items) and not char.items[0].characteristics.isAutomatic :
-                              char.move('tirer',screenRect)
-
                   elif event.type == KEYUP: # Si le clavier est utilisé. Permet l'activation du menu pause ou des fonctions caché (pour afficher, dans l'ordre, les hitboxes, les chemins, les FPS, le placeur d'objets et changer l'image de fonc en fonction des objets placé)
                         if event.key == K_ESCAPE and placeObjects:
                               placeObjects = False
