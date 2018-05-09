@@ -13,7 +13,7 @@ from ctypes import *
 pg.init() # Initialise pg
 pg.event.set_allowed([QUIT, KEYUP, MOUSEBUTTONDOWN]) # Limite la détection de touches
 ctypes.windll.user32.SetProcessDPIAware() # Enlève le redimensionnement de l'image sous Windows (https://gamedev.stackexchange.com/a/105820)
-screenSize = (windll.user32.GetSystemMetrics(0),windll.user32.GetSystemMetrics(1)) # Récupère la résolution a utilisé ensuite 
+screenSize = (windll.user32.GetSystemMetrics(0),windll.user32.GetSystemMetrics(1)) # Récupère la résolution a utilisé ensuite
 screen = pg.display.set_mode(screenSize, DOUBLEBUF | FULLSCREEN) # Crée la surface écran avec la résolution indiquée, en plein écran et avec une performance doublé
 screen.set_alpha(None) # Enlève la couche alpha de l'écran afin d'améliorer la performance du jeu
 alphaSurface = pg.Surface(screenSize, pg.SRCALPHA) # Crée une surface qui servira a dessiner des objets avec de la transparence au dessus de l'écran définit auparavant (https://stackoverflow.com/a/6350227)
@@ -32,6 +32,9 @@ mapObjects = [] # Liste de tout les objets de la map
 widthSmaller = None # Booléen définissant si la largeur de la map est plus petite que celle de l'écran
 heightSmaller = None # Booléen définissant si la hauteur de la map est plus petite que celle de l'écran
 
+coordsHealthRect=(screenSize[0]/4,screenSize[1]-50) 
+lengthHealthRect=(screenSize[0]/2,50) 
+
 drawHitboxes = False # Booléen définissant si l'on voit les hitboxes ou non
 drawPaths = False # Booléen définissant si l'on voit les chemins ou non
 drawFPS = False # Booléen définissant si l'on voit les FPS ou non
@@ -45,7 +48,7 @@ fpsFont = pg.font.SysFont("Roboto", 10, False, False) # La police utilisé pour 
 
 def loadItems(): # Charge les types d'items dans une liste
       tempItems = [] # Liste temporaire des items
-      with open("Resources/Items/Data.txt") as itemsFile: 
+      with open("Resources/Items/Data.txt") as itemsFile:
                   for line in itemsFile.readlines():
                         if line.strip() and not line.strip().isspace():
                               data = line.split(',')
@@ -135,7 +138,7 @@ def mapSetup(chosenMap, chosenChar):
 
 screenRect = None
 def draw(): # Retrace tout les éléments du jeu. Ordre important
-      global screenRect 
+      global screenRect
 
       if widthSmaller: # Lorsque la largeur de la map est plus petite que la largeur de l'écran
             chosenX = map.size[0] / 2 - screenSize[0] / 2 # L'emplacement X du rectangle écran définit par rapport à la map pour que celle-ci soit centré
@@ -186,10 +189,11 @@ def draw(): # Retrace tout les éléments du jeu. Ordre important
                   screen.blit(map.objectToPlace[0].sprite, (map.objectToPlace[1][0] - screenRect[0], map.objectToPlace[1][1] - screenRect[1]))
       if drawHitboxes or drawPaths or placeObjects:
             screen.blit(alphaSurface, (0, 0)) # Dessine la couche semi-transparente qui contient les hitbox et les chemins
+      pg.draw.rect(screen,pg.Color("grey"),pg.Rect(coordsHealthRect,lengthHealthRect))  
+      pg.draw.rect(screen,pg.Color(255,0,0),pg.Rect(coordsHealthRect,(lengthHealthRect[0]*char.health/100,lengthHealthRect[1])))
       pg.display.flip() # Rafraichi le jeu
 
 def react():
-      global drawInfo
       global f1Pressed
 
       char.mouvBullets()
@@ -311,12 +315,12 @@ def jeu():
                         if event.button == 1 and not placeObjects:
                               char.mouv('tirer', screenRect)
                         elif event.button == 1 and placeObjects: # Place un nouvel objet
-                              map.objectPlacer("place", screenRect)  
-                              updateMapOBJs()		
+                              map.objectPlacer("place", screenRect)
+                              updateMapOBJs()
                         elif event.button == 4 and placeObjects: # Modifie l'objet a placer
                               map.objectPlacer("scrollUp", screenRect)
                         elif event.button == 5 and placeObjects: # Modifie l'objet a placer
-                              map.objectPlacer("scrollDown", screenRect)				
+                              map.objectPlacer("scrollDown", screenRect)
                   elif event.type == KEYUP: # Si le clavier est utilisé. Permet l'activation du menu pause ou des fonctions caché (pour afficher, dans l'ordre, les hitboxes, les chemins, les FPS, le placeur d'objets et changer l'image de fonc en fonction des objets placé)
                         if event.key == K_ESCAPE and placeObjects:
                               placeObjects = False
