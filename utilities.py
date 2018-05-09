@@ -9,7 +9,7 @@ class Item: # Définis un objet pouvant être utilisé par le joueur
                         raise ValueError("Ne pas utiliser 'none' comme nom d'item!")
                 else:
                         self.name = name
-                        self.sprite = pygame.image.load("Resources/Items/Sprites/" + self.name + ".png").convert_alpha()
+                        self.sprite = pygame.image.load("Resources/Items/Sprites/" + self.name + ".png")
                         self.type = type # Une des options définis par le enum ItemTypes
                         self.value = value # La puissance de l'arme, le nombre de points de vies rétablies...
                         self.rect = self.sprite.get_rect() # Les coordonnées et la taille de l'item. La taille est définis par la taille du sprite de l'item
@@ -32,19 +32,15 @@ class Item: # Définis un objet pouvant être utilisé par le joueur
 
 
 class Weapon: # Classe auxiliaire pour définir les caractéristiques d'une arme
-      def __init__(self, aim = 95, speed = 20, isExplosive = False, isAutomatic = False):
-            self.aim = aim # La précision de tir en pourcentage. 100% correspond à une ligne droite
-            self.speed = speed # La vitesse du projectile
-            self.isExplosive = isExplosive # Définis si le projectile explose sur impact (ce qui fait des dégats plus répandus)
-            self.isAutomatic = isAutomatic # Si l'arme est automatique
+        def __init__(self, aim = 95, speed = 20, isExplosive = False):
+                self.aim = aim # La précision de tir en pourcentage. 100% correspond à une ligne droite
+                self.speed = speed # La vitesse du projectile
+                self.isExplosive = isExplosive # Définis si le projectile explose sur impact (ce qui fait des dégats plus répandus)
 
 
 class Hitbox:
         def __init__(self, coords, size):
-                if size == (0, 0):
-                        self.rect = pygame.Rect((-1, -1), (0, 0))
-                else:
-                        self.rect = pygame.Rect(coords, size)
+                self.rect = pygame.Rect(coords, size)
 
         def draw(self, coords, screen):
                 pygame.draw.rect(screen, pygame.Color(191, 63, 63, 127), pygame.Rect(coords[0], coords[1], self.rect.w, self.rect.h))
@@ -79,12 +75,12 @@ class Enemy: # Définis un ennemis qui va tenter d'attaquer les joueurs s'ils se
                 self.rect = self.sprite.get_rect() # Le rectangle définissant la hitbox de l'ennemis
                 self.screen = screen # La surface sur laquelle l'ennemis doit être affiché
                 self.speed = speed # La vitesse de l'ennemis
-                self.map = None # La map sur laquelle se trouve l'ennemis
+                self.map = map # La map sur laquelle se trouve l'ennemis
                 self.health = health # Les points de vie de l'ennemis
                 self.viewingRadius = viewingRadius # Le radius auxquel l'ennemis "voit" un joueurs
                 self.reactionTime = reactionTime # Le "temps de réaction" de l'ennemis. Correspond à la distance minimale parcouru par le joueur le plus proche pour que l'ennemis change sa trajectoire
                 self.weapons = weapons # Arme que l'ennemis pourrait porter
-                self.pathFinder = None # Le chercheur de chemin de l'ennemis, pour trouver le chemin le plus rapide vers les joueurs en tenant en compte les obstacles
+                self.pathFinder = PathFinder(self.map.hitboxes, max(self.rect.width, self.rect.height), self.viewingRadius) # Le chercheur de chemin de l'ennemis, pour trouver le chemin le plus rapide vers les joueurs en tenant en compte les obstacles
                 self.lastPlayerPos = None # La dernière position du joueur se trouvant le plus proche de l'ennemis
                 self.idleTime = 0 # Temps d'immobilité de l'ennemis entre chaque mouvement aléatoire (tant qu'aucun joueur est proche)
 
@@ -143,227 +139,100 @@ class Enemy: # Définis un ennemis qui va tenter d'attaquer les joueurs s'ils se
                         else:
                                 self.moveTowards(self.pathFinder.finish) # Marche vers la fin
 
-        def __deepcopy__(self, memo): # https://stackoverflow.com/a/15774013
-                cls = self.__class__
-                result = cls.__new__(cls)
-                memo[id(self)] = result
-                for k, v in self.__dict__.items():
-                        if k == "rect":
-                                setattr(result, k, copy.deepcopy(v, memo))
-                        else:
-                                setattr(result, k, copy.copy(v))
-                return result
-
 
 class Map: # Définis une carte jouable
-      def __init__(self, name, screen, items, obstacles, spawnCoords, enemies):
-            self.name = name
-            self.screen = screen # La fenètre principale
-            self.background = pygame.image.load("Resources/Maps/Sprites/" + self.name + ".png").convert() # Charge l'image de fond d'écran
-            self.size = self.background.get_size() # Définis la taille de la map à partir de l'image de fond d'écran
-            self.spawnCoords = spawnCoords
-            self.items = [] # Liste de tous les items de la map
-            self.appendItems(items)
-            self.hitboxes = [] # Récupère les hitbox de cette map
-            with open("Resources/Maps/Hitboxes/" + self.name + ".txt") as hitboxFile:
-                  for line in hitboxFile.readlines():
-                        if line.strip() and not line.strip().isspace():
-                              data = line.split(',')
-                              self.hitboxes.append(Hitbox((int(data[0]), int(data[1])), (int(data[2]), int(data[3]))))
-            self.hitboxes.append(Hitbox((0, -1000), (self.size[0], 1000))) # Place une hitbox délimitant le bord haut de la map
-            self.hitboxes.append(Hitbox((0, self.size[1]), (self.size[0], 1000))) # Place une hitbox délimitant le bord bas de la map
-            self.hitboxes.append(Hitbox((-1000, -1000), (1000, self.size[1] + 2000))) # Place une hitbox délimitant le bord gauche de la map
-            self.hitboxes.append(Hitbox((self.size[0], -1000), (1000, self.size[1] + 2000))) # Place une hitbox délimitant le bord droit de la map
-
-            self.obstacles = [] # Récupère les obstacles de cette map
-            with open("Resources/Maps/Obstacles/" + self.name + ".txt") as obstaclesFile: # Récupère les obstacles pour cette map
-                  for line in obstaclesFile.readlines():
-                        if line.strip() and not line.strip().isspace():
-                              data = line.strip().split(',')
-                              for obstacle in obstacles: # Retrouve l'obstacle grâce au nom
-                                    if obstacle.name == data[0]:
-                                          temp = copy.deepcopy(obstacle) # Recrée l'obstacle dans une nouvelle variable afin de pouvoir le modifier sans modifier l'original
-                                          temp.rect.move_ip(int(data[1]), int(data[2])) # Change les coordonnées de la copie de l'obstacle aux coordonnées définies
-                                          self.obstacles.append(temp)
-                                          self.hitboxes.append(Hitbox((temp.hitbox.rect.left + temp.rect.left, temp.hitbox.rect.top + temp.rect.top), temp.hitbox.rect.size)) # Ajoute aux hitbox de la map celle correspondant à cette obstacle. Les coordonnées sont définie par la hitbox au sein de l'obstacle et par l'emplacement de l'obstacle
-                                          break
-            self.objectifObject = copy.deepcopy(next(x for x in obstacles if x.name == "objectif")) # L'objet objectif que le joueur doit trouver
-            self.objectifObject.rect.move_ip(self.randomObjectifCoords()) # Où se trouve l'objectif à atteindre
-            self.objectToPlace = (obstacles[0], (0, 0))
-            self.objects = ["hitbox", "delete"] + obstacles + items
-            self.enemies = [] # Liste des ennemis de cette map
-            self.appendEnemies(enemies)
-            self.players = [] # Liste des joueurs de la map
-            self.clickedOnce = False # Pour le placeur d'hitbox. Indique si le joueur a déja indiqué les coordonnées de la nouvelle hitbox
-            self.tempObjectIndex = 2 # Index pour selectionner l'objet à placer
-
-      def appendEnemies(self, enemies):
-            with open("Resources/Maps/Enemies/" + self.name + ".txt") as enemiesFile:
-                  for line in enemiesFile.readlines():
-                        if line.strip() and not line.strip().isspace():
-                              data = line.strip().split(',')
-                              for enemy in enemies: # Retrouve l'ennemis grâce au nom
-                                    if enemy.name == data[0]:
-                                          temp = copy.deepcopy(enemy) # Recrée l'ennemis dans une nouvelle variable afin de pouvoir le modifier sans modifier l'original
-                                          temp.rect.move_ip(int(data[1]), int(data[2])) # Change les coordonnées de la copie de l'ennemis aux coordonnées définies
-                                          temp.fCoords = temp.rect.center
-                                          temp.map = self
-                                          temp.pathFinder = PathFinder(self.hitboxes, max(temp.rect.width, temp.rect.height), temp.viewingRadius)
-                                          self.enemies.append(temp)
-                                          break
-            self.objects += enemies    
-
-      def appendItems(self, items):
+        def __init__(self, name, screen, objectifCoords, items, obstacles, spawnCoords):
+                self.name = name
+                self.screen = screen # La fenètre principale
+                self.background = pygame.image.load("Resources/Maps/Sprites/" + self.name + ".png").convert() # Charge l'image de fond d'écran
+                self.size = self.background.get_size() # Définis la taille de la map à partir de l'image de fond d'écran
+                self.objectifCoords = objectifCoords # Où se trouve l'objectif à atteindre
+                self.items = [] # Dictionnaire de tous les items de la map. Clés: coordonnées de l'objet, Valeur: instance de le classe Item définissant l'objet en question
                 with open("Resources/Maps/Items/" + self.name + ".txt") as itemsFile: # Récupère et assigne les items pour cette map
                         for line in itemsFile.readlines():
-                                if line.strip() and not line.strip().isspace():
-                                        data = line.strip().split(',')
-                                        for item in items: # Retrouve l'items grâce au nom
-                                                if item.name == data[0]:
-                                                        temp = copy.deepcopy(item) # Recrée l'item dans une nouvelle variable afin de pouvoir le modifier sans modifier l'original
-                                                        temp.rect.move_ip(int(data[1]), int(data[2])) # Change les coordonnées de la copie de l'item aux coordonnées définies
-                                                        self.items.append(temp)
-                                                        break           
+                                data = line.strip().split(',')
+                                for item in items: # Retrouve l'items grâce au nom
+                                        if item.name == data[0]:
+                                                temp = copy.deepcopy(item) # Recrée l'item dans une nouvelle variable afin de pouvoir le modifier sans modifier l'original
+                                                temp.rect.move_ip(int(data[1]), int(data[2])) # Change les coordonnées de la copie de l'item aux coordonnées définies
+                                                self.items.append(temp)
+                                                break
+                self.hitboxes = [] # Récupère les hitbox de cette map
+                with open("Resources/Maps/Hitboxes/" + self.name + ".txt") as hitboxFile:
+                        for line in hitboxFile.readlines():
+                                data = line.split(',')
+                                self.hitboxes.append(Hitbox((int(data[0]), int(data[1])), (int(data[2]), int(data[3]))))
+                self.hitboxes.append(Hitbox((0, -1000), (self.size[0], 1000)))
+                self.hitboxes.append(Hitbox((0, self.size[1]), (self.size[0], 1000)))
+                self.hitboxes.append(Hitbox((-1000, -1000), (1000, self.size[1] + 2000)))
+                self.hitboxes.append(Hitbox((self.size[0], -1000), (1000, self.size[1] + 2000)))
 
-      def reset(self, enemies, items, resetPlayer):
-            self.enemies = []
-            self.appendEnemies(enemies)
-            self.items = []
-            self.appendItems(items)
-            if resetPlayer:
-                  for player in self.players:
-                        player.rect.topleft = self.spawnCoords
+                self.obstacles = [] # Récupère les obstacles de cette map
+                with open("Resources/Maps/Obstacles/" + self.name + ".txt") as obstaclesFile: # Récupère les obstacles pour cette map
+                        for line in obstaclesFile.readlines():
+                                data = line.strip().split(',')
+                                for obstacle in obstacles: # Retrouve l'obstacle grâce au nom
+                                        if obstacle.name == data[0]:
+                                                temp = copy.deepcopy(obstacle) # Recrée l'obstacle dans une nouvelle variable afin de pouvoir le modifier sans modifier l'original
+                                                temp.rect.move_ip(int(data[1]), int(data[2])) # Change les coordonnées de la copie de l'obstacle aux coordonnées définies
+                                                self.obstacles.append(temp)
+                                                self.hitboxes.append(Hitbox((temp.hitbox.rect.left + temp.rect.left, temp.hitbox.rect.top + temp.rect.top), temp.hitbox.rect.size)) # Ajoute aux hitbox de la map celle correspondant à cette obstacle. Les coordonnées sont définie par la hitbox au sein de l'obstacle et par l'emplacement de l'obstacle
+                                                break
+                self.enemies = [] # Liste des ennemis de cette map
+                self.players = [] # Liste des joueurs de la map
 
-      def draw(self, screenRect, widthSmaller, heightSmaller): # Charge la map
-            chosenX = 0 # Le côté gauche de la map
-            chosenY = 0 # Le côté haut de la map
-            chosenXs = screenRect.x # Le côté gauche de l'écran
-            chosenYs = screenRect.y # Le côté haut de l'écran
-            if widthSmaller: # Si la largeur de la map est inférieure à celle de l'écran
-                  chosenX = screenRect.width / 2 - self.size[0] / 2 # Centre la map sur l'écran
-                  chosenXs = 0
-            if heightSmaller: # Si l'hauteur de la map est inférieure à celle de l'écran
-                  chosenY = screenRect.height / 2 - self.size[1] / 2 # Centre la map sur l'écran
-                  chosenYs = 0
-            self.screen.blit(self.background, (chosenX, chosenY), pygame.Rect((chosenXs, chosenYs), screenRect.size)) # Affiche l'image de la map sur l'écran en prenant en compte si la map est plus petite que l'écran ou pas
+        def appendEnemies(self, enemies):
+                with open("Resources/Maps/Enemies/" + self.name + ".txt") as enemiesFile:
+                        for line in enemiesFile.readlines():
+                                data = line.strip().split(',')
+                                for enemy in enemies: # Retrouve l'ennemis grâce au nom
+                                        if enemy.name == data[0]:
+                                                temp = copy.copy(enemy) # Recrée l'ennemis dans une nouvelle variable afin de pouvoir le modifier sans modifier l'original
+                                                temp.rect.move_ip(int(data[1]), int(data[2])) # Change les coordonnées de la copie de l'ennemis aux coordonnées définies
+                                                temp.fCoords = temp.rect.center
+                                                self.enemies.append(temp)
+                                                break
 
-      def mod(self, backgroundNumber): # Met à jour l'image de la map sans avoir a créer une nouvelle instance de cette classe
-            self.background = pygame.image.load("Resources/Maps/Sprites/" + self.backgroundPath + str(backgroundNumber) + ".png")
-            self.screen.blit(self.background, (0, 0))
+        def draw(self, screenRect, widthSmaller, heightSmaller): # Charge la map
+                chosenX = 0 # Le côté gauche de la map
+                chosenY = 0 # Le côté haut de la map
+                chosenXs = screenRect.x # Le côté gauche de l'écran
+                chosenYs = screenRect.y # Le côté haut de l'écran
+                if widthSmaller: # Si la largeur de la map est inférieure à celle de l'écran
+                        chosenX = screenRect.width / 2 - self.size[0] / 2 # Centre la map sur l'écran
+                        chosenXs = 0
+                if heightSmaller: # Si l'hauteur de la map est inférieure à celle de l'écran
+                        chosenY = screenRect.height / 2 - self.size[1] / 2 # Centre la map sur l'écran
+                        chosenYs = 0
+                self.screen.blit(self.background, (chosenX, chosenY), pygame.Rect((chosenXs, chosenYs), screenRect.size)) # Affiche l'image de la map
 
-      def drawObjects(self, objects, screenRect, isTransparent = False, alphaSurface = None): # Calcul les coordonnés écran d'une liste d'objets devant suivre une syntaxe stricte
-            if objects: # Vérifie que la liste donnée n'est pas vide
-                  for obj in objects:
-                        if screenRect.colliderect(obj.rect): # Sélectionne tout les objets en collision avec le rectangle de l'écran, c'est à dire ceux qui devont être affiché
-                              if isTransparent:
-                                    obj.draw((obj.rect.x - screenRect.x, obj.rect.y - screenRect.y), alphaSurface) # Place les objets à déssiner sur leurs emplacements écran
-                              else:
-                                    obj.draw((obj.rect.x - screenRect.x, obj.rect.y - screenRect.y), self.screen) # Place les objets à déssiner sur leurs emplacements écran
+        def mod(self, backgroundNumber): # Met à jour l'image de la map sans avoir a créer une nouvelle instance de cette classe
+                self.background = pygame.image.load("Resources/Maps/Sprites/" + self.backgroundPath + str(backgroundNumber) + ".png")
+                self.screen.blit(self.background, (0, 0))
 
-      def moveEnemies(self):
-            for enemy in self.enemies:
-                  enemy.move()
+        def drawObjects(self, objects, screenRect, isTransparent = False, alphaSurface = None): # Calcul les coordonnés écran d'une liste d'objets devant suivre une syntaxe stricte
+                if objects: # Vérifie que la liste donnée n'est pas vide
+                        for obj in objects:
+                                if screenRect.colliderect(obj.rect): # Sélectionne tout les objets en collision avec le rectangle de l'écran, c'est à dire ceux qui devont être affiché
+                                        if isTransparent:
+                                                obj.draw((obj.rect.x - screenRect.x, obj.rect.y - screenRect.y), alphaSurface) # Place les objets à déssiner sur leurs emplacements écran
+                                        else:
+                                                obj.draw((obj.rect.x - screenRect.x, obj.rect.y - screenRect.y), self.screen) # Place les objets à déssiner sur leurs emplacements écran
 
-      def randomObjectifCoords(self):
-            return (random.randint(0, self.size[0]), random.randint(0, self.size[1]))
+        def moveEnemies(self):
+                for enemy in self.enemies:
+                        enemy.move()
 
-      def objectPlacer(self, action, screenRect):
-            screenMouseCoords = pygame.mouse.get_pos() #on obtient les coordonées de la souris
-            realMouseCoords = (screenMouseCoords[0] + screenRect.topleft[0], screenMouseCoords[1] + screenRect.topleft[1]) #on obtient les coordonnées réelles du curseur (pas dans le repère de la map)
-            if action == "update": # Seulement modifier l'emplacement de l'objet à placer 
-                  if type(self.objectToPlace[0]) is pygame.Rect: # S'il s'agit d'une hitbox
-                        if not self.clickedOnce: # S'il s'agit d'une hitbox et que l'utilisateur n'a pas encore choisit ses coordonnées
-                              self.objectToPlace = (pygame.Rect(realMouseCoords, (10, 10)), self.objectToPlace[1]) # Définis un rectangle aux coordonnées de la souris et de taille 10x10 pour indiquer 
-                        else: # Si l'utilisateur a déja choisit les coordonnés du rectangle
-                              self.objectToPlace[0].size = (max(0, realMouseCoords[0] - self.objectToPlace[0].x), max(0, realMouseCoords[1] - self.objectToPlace[0].y)) # Change seulement la taille du rectangle pour s'étendre jusqu'aux coordonnées de la souris
-                  elif self.objectToPlace[0] == "delete":
-                        self.objectToPlace = (self.objectToPlace[0], (realMouseCoords[0] - 15, realMouseCoords[1] - 15)) # Détermine les coordonnées de l'objet à placer pour que la souris se trouve au centre de celui-ci                                
-                  else: # S'il s'agit d'un objet normal
-                        self.objectToPlace = (self.objectToPlace[0], (realMouseCoords[0] - self.objectToPlace[0].rect.width / 2, realMouseCoords[1] - self.objectToPlace[0].rect.height / 2)) # Détermine les coordonnées de l'objet à placer pour que la souris se trouve au centre de celui-ci
-            elif action == "scrollUp": # Change l'objet à placer en avancant dans la liste des objets
-                  if self.tempObjectIndex >= len(self.objects) - 1: # Dans le cas où l'objet choisit est le dernier dans la liste
-                        self.objectToPlace = (self.objects[0], self.objectToPlace[1]) # L'objet choisit devient le premier de la liste
-                        self.tempObjectIndex = 0
-                  else:
-                        self.objectToPlace = (self.objects[self.tempObjectIndex + 1], self.objectToPlace[1]) # L'objet choisit est celui d'après
-                        self.tempObjectIndex += 1
-                  if self.objectToPlace[0] == "hitbox":
-                        self.objectToPlace = (pygame.Rect(realMouseCoords, (10, 10)), self.objectToPlace[1])
-            elif action == "scrollDown": # Change l'objet à placer en reculant dans la liste des objets
-                  if self.tempObjectIndex <= 0: # Dans le cas où l'objet choisit est le premier dans la liste                
-                        self.objectToPlace = (self.objects[len(self.objects) - 1], self.objectToPlace[1]) # L'objet choisit devient le dernier de la liste
-                        self.tempObjectIndex = len(self.objects) - 1
-                  else:
-                        self.objectToPlace = (self.objects[self.tempObjectIndex - 1], self.objectToPlace[1]) # L'objet choisit est celui d'avant
-                        self.tempObjectIndex -= 1
-                  if self.objectToPlace[0] == "hitbox":
-                        self.objectToPlace = (pygame.Rect(realMouseCoords, (10, 10)), self.objectToPlace[1])
-            elif action == "place": # Place l'objet choisit aux coordonnées choisit
-                  if type(self.objectToPlace[0]) is pygame.Rect: # S'il faut placer une hitbox
-                        if self.clickedOnce: # Sil'utilisateur a déjà cliqué une deuxième fois
-                              self.hitboxes.append(Hitbox(self.objectToPlace[0].topleft, self.objectToPlace[0].size)) # Ajoute l'objet a la map
-                              with open("Resources/Maps/Hitboxes/" + self.name + ".txt", "a") as hitboxesFile:
-                                    hitboxesFile.write("\n" + str(self.objectToPlace[0].x) + "," + str(self.objectToPlace[0].y) + "," + str(self.objectToPlace[0].w) + "," + str(self.objectToPlace[0].h)) # Ajoute l'objet aux fichier obstacles de la map
-                              self.clickedOnce = False
-                        else:
-                              self.clickedOnce = True
-                              self.objectToPlace = (pygame.Rect(realMouseCoords, (1, 1)), self.objectToPlace[1])
-                  elif self.objectToPlace[0] == "delete":
-                        tempObjects = self.enemies + self.obstacles + self.items + self.hitboxes
-                        tempObjIndex = pygame.Rect(realMouseCoords, (30, 30)).collidelistall([x.rect for x in tempObjects])
-                        tempObjIndex = sorted(tempObjIndex, reverse = True)
-                        for obj in tempObjIndex:
-                              if type(tempObjects[obj]) is Item:
-                                    self.items.remove(tempObjects[obj])
-                                    tempListName = "Items"
-                              elif type(tempObjects[obj]) is Obstacle:
-                                    self.obstacles.remove(tempObjects[obj])
-                                    tempListName = "Obstacles"
-                              elif type(tempObjects[obj]) is Enemy:
-                                    self.enemies.remove(tempObjects[obj])
-                                    tempListName = "Enemies"
-                              elif type(tempObjects[obj]) is Hitbox:
-                                    self.hitboxes.remove(tempObjects[obj])
-                                    tempListName = "Hitboxes"
-                              with open("Resources/Maps/" + tempListName +"/" + self.name + ".txt", "r+") as obstaclesFile:
-                                    lines = obstaclesFile.read().split('\n')
-                                    obstaclesFile.truncate(0)
-                                    obstaclesFile.seek(0)
-                                    for line in lines:
-                                          if type(tempObjects[obj]) is Hitbox:
-                                                if not line == (str(tempObjects[obj].rect.x) + ',' + str(tempObjects[obj].rect.y) + ',' + str(tempObjects[obj].rect.w) + ',' + str(tempObjects[obj].rect.h)):
-                                                      obstaclesFile.write(line + '\n')
-                                          else:
-                                                if not line == (tempObjects[obj].name + ',' + str(tempObjects[obj].rect.x) + ',' + str(tempObjects[obj].rect.y)):
-                                                      obstaclesFile.write(line + '\n')
 
-                  else:
-                        tempObj = copy.deepcopy(self.objectToPlace[0]) # Copie l'objet pour éviter de modifier l'original
-                        tempObj.rect.move_ip((realMouseCoords[0] - self.objectToPlace[0].rect.width / 2, realMouseCoords[1] - self.objectToPlace[0].rect.height / 2)) # Change les coordonnées de l'objet à celle choisit
-                        
-                        if type(tempObj) is Obstacle: # Si l'objet est un obstacle
-                              self.obstacles.append(tempObj) # Ajoute l'objet à la map
-                              with open("Resources/Maps/Obstacles/" + self.name + ".txt", "a+") as obstaclesFile:
-                                    obstaclesFile.write("\n" + tempObj.name + ',' + str(tempObj.rect.x) + ',' + str(tempObj.rect.y)) # Ajoute l'objet aux fichier obstacles de la map    
-                        elif type(tempObj) is Item: # Si l'objet est un item
-                              self.items.append(tempObj) # Ajoute l'objet à la map
-                              with open("Resources/Maps/Items/" + self.name + ".txt", "a+") as itemsFile:
-                                    itemsFile.write("\n" + tempObj.name + ',' + str(tempObj.rect.x) + ',' + str(tempObj.rect.y)) # Ajoute l'objet aux fichier items de la map    
-                        elif type(tempObj) is Enemy: # Si l'objet est un ennemis
-                              self.enemies.append(tempObj) # Ajoute l'objet à la map     
-                              with open("Resources/Maps/Enemies/" + self.name + ".txt", "a+") as enemiesFile:
-                                    enemiesFile.write("\n" + tempObj.name + ',' + str(tempObj.rect.x) + ',' + str(tempObj.rect.y)) # Ajoute l'objet aux fichier ennemis de la map  
-
-                              
-class Perso:
-        def __init__(self, name, fenetre, speed, maxItems, maxHealth):
+class Perso:  # Définis un personnage contrôlable par le joueur
+        def __init__(self, name, fenetre, speed, maxItems, maxHealth, map):
                 self.name = name
                 self.fenetre = fenetre
                 self.sprite = pygame.image.load("Resources/Persos/Sprites/" + name + ".png").convert_alpha()
                 self.rect = self.sprite.get_rect() # Définis l'image du personnage comme un rectangle
                 self.speed = speed # Vitesse de déplacement du personnage selon le choix du joueur
                 self.maxItems = maxItems # Taille de l'inventaire
-                self.map = None # Map dans laquelle on se trouve
+                self.map = map # Map dans laquelle on se trouve
                 self.items = []
                 self.health = maxHealth # Met le nombre de points de vie de départ au maximum
                 self.maxhealth = maxHealth # Points de vie maximum que le perso peut avoir
@@ -495,11 +364,8 @@ class PathFinder: # Classe permettant de trouver le chemin le plus rapide entre 
                 node.state = 2 # Change l'état du node pour qu'il ne soit pas pris en compte une deuxième fois par closestNode()
 
         def __closestNode(self, includeChecked): # Indique le node le plus proche du point de fin dans la liste de nodes
-                tempNodes = list(filter(lambda x: x.state == 1, self.nodes)) 
-                if includeChecked or not any(tempNodes):
-                        tempNodes = self.nodes
                 smallestTLList = [] # "Smallest Total Lengths List" - liste des nodes dont la longueur totale (longueur au début + longueur à la fin) est la plus courte
-                for node in tempNodes: # Itère les nodes qui n'ont pas encore été les plus proche
+                for node in (list(filter(lambda x: x.state == 1, self.nodes)) if not includeChecked else self.nodes): # Itère les nodes qui n'ont pas encore été les plus proche
                         if smallestTLList: # Si un node se trouve déjà dans la liste
                                 if node.totalLength < smallestTLList[0].totalLength:
                                         smallestTLList = [node] # Si un node est plus petits que les autres nodes de la liste, il les remplace
@@ -541,9 +407,13 @@ class PathFinder: # Classe permettant de trouver le chemin le plus rapide entre 
 
         def drawPath(self, screen, screenCoords): # Déssine le chemin le plus court à l'aide d'un tracé rouge
                 if self.path:
+                        lastNode = None
                         for node in self.path:
-                                pygame.draw.circle(screen, pygame.Color("red"), (node.rect.center[0] - screenCoords[0], node.rect.center[1] - screenCoords[1]), 5) # On indique un node du chemin par un cercle rouge à son centre
-                        pygame.draw.aalines(screen, pygame.Color("red"), False, [(x.rect.centerx - screenCoords[0], x.rect.centery - screenCoords[1]) for x in self.path] + [(self.finish[0] - screenCoords[0], self.finish[1] - screenCoords[1])]) # On indique une suite de ligne anti-aliasé, suivant le chemin
+                                pygame.draw.circle(screen, pygame.Color("red"), (node.rect.center[0] - screenCoords[0], node.rect.center[1] - screenCoords[1]), 10) # On indique un node du chemin par un cercle rouge à son centre
+                                if lastNode:
+                                        pygame.draw.line(screen, pygame.Color("red"), (node.rect.center[0] - screenCoords[0], node.rect.center[1] - screenCoords[1]), (lastNode.rect.center[0] - screenCoords[0], lastNode.rect.center[1] - screenCoords[1]), 5) # On indique le chemin à prendre à l'aide d'une ligne rouge
+                                lastNode = node
+                        pygame.draw.line(screen, pygame.Color("red"), (lastNode.rect.center[0] - screenCoords[0], lastNode.rect.center[1] - screenCoords[1]), (self.finish[0] - screenCoords[0], self.finish[1] - screenCoords[1]), 5) # On déssine une dernière ligne reliant le dernier node au point de fin
                         pygame.draw.circle(screen, pygame.Color("yellow"), (self.finish[0] - screenCoords[0], self.finish[1] - screenCoords[1]), 5) # On indique le point de fin à l'aide d'un point jaune
 
         class Node: # Classe définissant un node
@@ -568,10 +438,11 @@ class Bullet :
         def __init__(self, map, perso, screen, screenRect, weaponCharacteristics):
                 screenMouseCoords = pygame.mouse.get_pos() #on obtient les coordonées de la souris
                 self.weaponCharacteristics = weaponCharacteristics
-                realMouseCoords = (screenMouseCoords[0] + screenRect.topleft[0], screenMouseCoords[1] + screenRect.topleft[1]) #on obtient les coordonnées réelles du curseur (pas dans le repère de la map)
+                realMouseCoords = screenMouseCoords + screenRect.topleft #on obtient les coordonnées réelles du curseur (pas dans le repère de la map)
                 self.map = map
 
                 angle = self.atan2Normalized((perso.rect.centery - realMouseCoords[1]), (realMouseCoords[0] - perso.rect.centerx)) # Angle de la destination par rapport au personnage dans la plan du repère
+                
                 self.direction = (self.weaponCharacteristics.speed * round(math.cos(angle), 5), -self.weaponCharacteristics.speed * round(math.sin(angle), 5)) # Trouve les coefficients avec lesquels incrémenté les coordonnées de l'ennemi pour atteindre la destination à l'aide de trigonométrie
 
                 self.rect = pygame.Rect((perso.rect.centerx - 2, perso.rect.centery - 2),(4, 4))   #on défini le rectangle lié à la balle
