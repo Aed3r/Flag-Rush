@@ -6,7 +6,6 @@ brics,400,960
 brics,900,960
 brics,1400,960
 brics,1900,960
-brics,400,1715
 brics,900,1715
 brics,1400,1715
 brics,1900,1715
@@ -16,10 +15,6 @@ blueCar,1186,2331
 yellowCar,1928,2328
 redCar,2173,2330
 redCar,1928,1573
-
-
-
-yellowCar,1208,1569
 yellowCar,934,1575
 redCar,428,1562
 blueCar,1178,849
@@ -40,3 +35,6 @@ tree1,1294,1660
 tree2,281,1572
 tree2,1322,139
 tree2,288,264
+brics,400,1714
+blueCar,1228,1583
+

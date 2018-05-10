@@ -1,1 +1,5 @@
 
+Health Pack,1651,856
+Ammo,1259,1570
+Health Pack,1542,2518
+Ammo,2473,2374

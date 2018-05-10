@@ -1,1 +1,1 @@
-zombie,2,20,300,30,none
+zombie,2,60,300,30,none
