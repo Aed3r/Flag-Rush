@@ -1,7 +1,7 @@
 Pistol,WEAPON,25,99,8,False,False,10,False
 Assault Rifle,WEAPON,20,95,10,False,True,20,False
 Shotgun,WEAPON,30,85,9,False,False,30,True
-Mini Gun,WEAPON,20,95,15,False,True,10,False
+Minigun,WEAPON,20,95,15,False,True,10,False
 Claymore,EXPLOSIVE,50
 Health Pack,HEALTH,50
 Ammo,AMMO,40
